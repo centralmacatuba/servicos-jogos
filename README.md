@@ -8,10 +8,8 @@ Cada diretório de primeiro nível representa um repositório antigo e mantém o
 
 | Pasta | Repositório original | Projeto Cloudflare Pages |
 |---|---|---|
-| `games-site` | [games-site](https://github.com/centralmacatuba/games-site) | `centralmacatuba-servicos-jogos-games-site` |
 | `minecraft-eaglercraft-dev` | [minecraft-eaglercraft-dev](https://github.com/centralmacatuba/minecraft-eaglercraft-dev) | `centralmacatuba-servicos-jogos-minecraft-eaglercraft-dev` |
 | `minecraft-koneclient` | [minecraft-koneclient](https://github.com/centralmacatuba/minecraft-koneclient) | `centralmacatuba-servicos-jogos-minecraft-koneclient` |
-| `tunnelrushtopvaz` | [tunnelrushtopvaz](https://github.com/centralmacatuba/tunnelrushtopvaz) | `centralmacatuba-servicos-jogos-tunnelrushtopvaz` |
 | `minecraft-amplerlauncher` | [minecraft-amplerlauncher](https://github.com/centralmacatuba/minecraft-amplerlauncher) | `centralmacatuba-servicos-jogos-minecraft-amplerlauncher` |
 | `minecraft-astra` | [minecraft-astra](https://github.com/centralmacatuba/minecraft-astra) | `centralmacatuba-servicos-jogos-minecraft-astra` |
 | `minecraft-classicube` | [minecraft-classicube](https://github.com/centralmacatuba/minecraft-classicube) | `centralmacatuba-servicos-jogos-minecraft-classicube` |
@@ -24,8 +22,18 @@ Cada diretório de primeiro nível representa um repositório antigo e mantém o
 | `tabuleiros` | [tabuleiros](https://github.com/centralmacatuba/tabuleiros) | `centralmacatuba-servicos-jogos-tabuleiros` |
 | `verdade-ou-desafio` | [verdade-ou-desafio](https://github.com/centralmacatuba/verdade-ou-desafio) | `centralmacatuba-servicos-jogos-verdade-ou-desafio` |
 | `brincadeiras` | [brincadeiras](https://github.com/centralmacatuba/brincadeiras) | `centralmacatuba-servicos-jogos-brincadeiras` |
-| `tgcofficial` | [tgcofficial](https://github.com/centralmacatuba/tgcofficial) | `centralmacatuba-servicos-jogos-tgcofficial` |
 
 ## Deploys
 
 Cada projeto Cloudflare Pages deve usar este repositório como fonte GitHub e configurar sua respectiva pasta como **Root directory**. A branch de produção é `main`.
+
+## Forks preservados
+
+Os projetos abaixo são forks e, por isso, não foram incorporados a este repositório centralizado. Seus repositórios e projetos Cloudflare Pages permanecem inalterados.
+
+| Repositório fork | Projeto Cloudflare Pages |
+|---|---|
+| `games-site` | `centralmacatuba-servicos-jogos-games-site` |
+| `tunnelrushtopvaz` | `centralmacatuba-servicos-jogos-tunnelrushtopvaz` |
+| `tgcofficial` | `centralmacatuba-servicos-jogos-tgcofficial` |
+
