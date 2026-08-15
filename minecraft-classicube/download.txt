@@ -1,0 +1,3 @@
+https://github.com/ClassiCube/ClassiCube
+
+exige compilação, use o script classicube.sh em https://centralmacatuba.qzz.io/servicos/jogos/minecraft/classicube/classicube.sh para automatizar a compilação, mas antes de usar, baixa o script e edite ele para a usa pasta de destino e depois execute

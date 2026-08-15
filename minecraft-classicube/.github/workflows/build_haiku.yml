@@ -1,0 +1,48 @@
+name: Build latest (Haiku)
+# trigger via either push to selected branches or on manual run
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.ref }}-haiku
+  cancel-in-progress: true
+
+jobs:
+  build-haiku:
+    runs-on: ubuntu-latest
+    container:
+      image: haiku/cross-compiler:x86_64-r1beta4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile haiku build
+        id: compile
+        env: 
+          COMMON_FLAGS: "-O1 -s -fno-stack-protector -fno-math-errno -Qn"
+        run: |
+          cd src        
+          x86_64-unknown-haiku-gcc *.c Platform_BeOS.cpp Window_BeOS.cpp -o ClassiCube-haiku ${{ env.COMMON_FLAGS }} -lm -lGL -lnetwork -lstdc++ -lbe -lgame -ltracker
+          
+
+      - uses: ./.github/actions/notify_failure
+        if: ${{ always() && steps.compile.outcome == 'failure' }}
+        with:
+          NOTIFY_MESSAGE: 'Failed to compile Haiku build'
+          WEBHOOK_URL: '${{ secrets.WEBHOOK_URL }}'
+          
+          
+      - uses: ./.github/actions/upload_build
+        if: ${{ always() && steps.compile.outcome  == 'success' }}
+        with:
+          SOURCE_FILE: 'src/ClassiCube-haiku'
+          DEST_NAME: 'ClassiCube-haiku'
+          
+          
+      - uses: ./.github/actions/notify_success
+        if: ${{ always() && steps.compile.outcome == 'success' }}
+        with:
+          DESTINATION_URL: '${{ secrets.NOTIFY_URL }}'
+          WORKFLOW_NAME: 'haiku'
