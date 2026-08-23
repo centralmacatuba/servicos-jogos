@@ -1,0 +1,5 @@
+1.15=https://bafybeidbtfaelrb6ras6llgwee5z6inve347s4qabuffvplezyamdojhfy.ipfs.dweb.link/?filename=Offline_Download_Version.zip
+
+1.12=https://bafybeifkhdmjy2phs5w67537wmbeer2upt5culejvbigct6i2gk26t65qy.ipfs.dweb.link/?filename=Eaglercraft_1.12_Offline_Download.zip
+
+1.18=https://bafybeihn2tdt55pg5hvju7zu4jkp7mglu3ynisgzmqm7ebkec4qi7lgt4y.ipfs.dweb.link/?filename=EaglercraftX_1.8_Signed_Offline.zip
