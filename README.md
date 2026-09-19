@@ -1,12 +1,12 @@
 # Central Macatuba — Serviços e Jogos
 
-Este repositório centraliza os projetos anteriormente mantidos em repositórios separados e publicados no Cloudflare Pages com o prefixo `centralmacatuba-servicos-jogos-`.
+Este repositório centraliza os projetos anteriormente mantidos em repositórios separados e publicados com o prefixo `centralmacatuba-servicos-jogos-`. Os projetos foram migrados do Cloudflare Pages para a Vercel, mantendo os mesmos nomes, repositório, branch e diretórios de origem.
 
-Cada diretório de primeiro nível representa um repositório antigo e mantém o conteúdo correspondente ao projeto original. Os projetos continuam isolados por pasta para permitir deploys independentes no Cloudflare Pages por meio do campo **Root directory**.
+Cada diretório de primeiro nível representa um projeto independente e mantém o conteúdo correspondente ao projeto original. Os projetos continuam isolados por pasta para permitir deploys independentes na Vercel por meio do campo **Root directory**.
 
 ## Projetos centralizados
 
-| Pasta | Repositório original | Projeto Cloudflare Pages |
+| Pasta | Repositório original | Projeto Vercel |
 |---|---|---|
 | `minecraft-eaglercraft-dev` | [minecraft-eaglercraft-dev](https://github.com/centralmacatuba/minecraft-eaglercraft-dev) | `centralmacatuba-servicos-jogos-minecraft-eaglercraft-dev` |
 | `minecraft-koneclient` | [minecraft-koneclient](https://github.com/centralmacatuba/minecraft-koneclient) | `centralmacatuba-servicos-jogos-minecraft-koneclient` |
@@ -22,18 +22,23 @@ Cada diretório de primeiro nível representa um repositório antigo e mantém o
 | `tabuleiros` | [tabuleiros](https://github.com/centralmacatuba/tabuleiros) | `centralmacatuba-servicos-jogos-tabuleiros` |
 | `verdade-ou-desafio` | [verdade-ou-desafio](https://github.com/centralmacatuba/verdade-ou-desafio) | `centralmacatuba-servicos-jogos-verdade-ou-desafio` |
 | `brincadeiras` | [brincadeiras](https://github.com/centralmacatuba/brincadeiras) | `centralmacatuba-servicos-jogos-brincadeiras` |
+| `uno` | — | `centralmacatuba-servicos-jogos-uno` |
 
 ## Deploys
 
-Cada projeto Cloudflare Pages deve usar este repositório como fonte GitHub e configurar sua respectiva pasta como **Root directory**. A branch de produção é `main`.
+Cada projeto Vercel deve usar este repositório como fonte GitHub, configurar sua respectiva pasta como **Root directory** e usar a branch de produção `main`. Os deploys são acionados automaticamente pelos pushes nessa branch.
+
+O projeto `uno` usa a pasta `uno` como **Root directory**, está publicado na Vercel como `centralmacatuba-servicos-jogos-uno` e possui os seguintes domínios personalizados:
+
+- `uno.jogos.servicos.centralmacatuba.qzz.io`
+- `uno.jogos.servicos.centralmacatuba.dpdns.org`
 
 ## Forks preservados
 
-Os projetos abaixo são forks e, por isso, não foram incorporados a este repositório centralizado. Seus repositórios e projetos Cloudflare Pages permanecem inalterados.
+Os projetos abaixo são forks e, por isso, não foram incorporados a este repositório centralizado. Seus repositórios permanecem separados, mas seus projetos também foram migrados do Cloudflare Pages para a Vercel.
 
-| Repositório fork | Projeto Cloudflare Pages |
+| Repositório fork | Projeto Vercel |
 |---|---|
 | `games-site` | `centralmacatuba-servicos-jogos-games-site` |
 | `tunnelrushtopvaz` | `centralmacatuba-servicos-jogos-tunnelrushtopvaz` |
 | `tgcofficial` | `centralmacatuba-servicos-jogos-tgcofficial` |
-
