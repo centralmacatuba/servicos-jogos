@@ -22,16 +22,11 @@ Cada diretório de primeiro nível representa um projeto independente e mantém 
 | `tabuleiros` | [tabuleiros](https://github.com/centralmacatuba/tabuleiros) | `centralmacatuba-servicos-jogos-tabuleiros` |
 | `verdade-ou-desafio` | [verdade-ou-desafio](https://github.com/centralmacatuba/verdade-ou-desafio) | `centralmacatuba-servicos-jogos-verdade-ou-desafio` |
 | `brincadeiras` | [brincadeiras](https://github.com/centralmacatuba/brincadeiras) | `centralmacatuba-servicos-jogos-brincadeiras` |
-| `uno` | — | `centralmacatuba-servicos-jogos-uno` |
+| `uno` | [uno](https://github.com/centralmacatuba/uno) | `centralmacatuba-servicos-jogos-uno` |
 
 ## Deploys
 
 Cada projeto Vercel deve usar este repositório como fonte GitHub, configurar sua respectiva pasta como **Root directory** e usar a branch de produção `main`. Os deploys são acionados automaticamente pelos pushes nessa branch.
-
-O projeto `uno` usa a pasta `uno` como **Root directory**, está publicado na Vercel como `centralmacatuba-servicos-jogos-uno` e possui os seguintes domínios personalizados:
-
-- `uno.jogos.servicos.centralmacatuba.qzz.io`
-- `uno.jogos.servicos.centralmacatuba.dpdns.org`
 
 ## Forks preservados
 
