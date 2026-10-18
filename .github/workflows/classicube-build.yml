@@ -105,6 +105,29 @@ jobs:
           emcc --version
           make --version
 
+      - name: Configure web asset URLs for subdirectory hosting
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          resources = Path("upstream/src/Resources.c")
+          source = resources.read_text(encoding="utf-8")
+          old = 'static cc_string url = String_FromConst(RESOURCE_SERVER "/default.zip");'
+          new = 'static cc_string url = String_FromConst("default.zip");'
+          if old not in source:
+              raise SystemExit("Could not locate the default texture-pack URL in Resources.c")
+          resources.write_text(source.replace(old, new, 1), encoding="utf-8")
+
+          constants = Path("upstream/src/Constants.h")
+          source = constants.read_text(encoding="utf-8")
+          old = '#define RESOURCE_SERVER "http://static.classicube.net"'
+          new = '#define RESOURCE_SERVER "https://classicube.net/static"'
+          if old not in source:
+              raise SystemExit("Could not locate the official resource-server setting in Constants.h")
+          constants.write_text(source.replace(old, new, 1), encoding="utf-8")
+          PY
+
       - name: Compile the WebAssembly client
         working-directory: upstream
         run: |
@@ -133,26 +156,6 @@ jobs:
           out="minecraft/classicube/game"
           cp upstream/ClassiCube.js "$out/ClassiCube.js"
           cp upstream/ClassiCube.wasm "$out/ClassiCube.wasm"
-
-          # The official web client defaults to /static/default.zip. This game is
-          # hosted in a subdirectory, so make the texture-pack URL relative.
-          python3 - <<'PY'
-          from pathlib import Path
-
-          path = Path("minecraft/classicube/game/ClassiCube.js")
-          data = path.read_text(encoding="utf-8")
-          replacements = (
-              ("'/static/default.zip'", "'default.zip'"),
-              ('"/static/default.zip"', '"default.zip"'),
-          )
-          for old, new in replacements:
-              data = data.replace(old, new)
-          if "/static/default.zip" in data:
-              raise SystemExit("Could not safely rewrite the default texture-pack URL")
-          if "default.zip" not in data:
-              raise SystemExit("The compiled client does not contain a default.zip URL to validate")
-          path.write_text(data, encoding="utf-8")
-          PY
 
           cat > "$out/index.html" <<'HTML'
           <!doctype html>
