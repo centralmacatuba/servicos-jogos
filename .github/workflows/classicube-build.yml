@@ -140,20 +140,20 @@ jobs:
       - name: Download and validate official default texture pack
         run: |
           set -euo pipefail
-          mkdir -p minecraft/classicube/game
+          mkdir -p minecraft/classicube/
           curl --fail --location --silent --show-error \
             --retry 3 --retry-all-errors \
             https://classicube.net/static/default.zip \
-            --output minecraft/classicube/game/default.zip
-          test -s minecraft/classicube/game/default.zip
-          unzip -tq minecraft/classicube/game/default.zip
+            --output minecraft/classicube/default.zip
+          test -s minecraft/classicube/default.zip
+          unzip -tq minecraft/classicube/default.zip
 
       - name: Publish compiled files and create game launcher
         env:
           UPSTREAM_TAG: ${{ needs.check-release.outputs.tag }}
         run: |
           set -euo pipefail
-          out="minecraft/classicube/game"
+          out="minecraft/classicube"
           cp upstream/ClassiCube.js "$out/ClassiCube.js"
           cp upstream/ClassiCube.wasm "$out/ClassiCube.wasm"
 
@@ -164,7 +164,7 @@ jobs:
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
             <meta name="theme-color" content="#000000">
-            <title>ClassiCube | Central Macatuba</title>
+            <title>ClassiCube | Jogos - Serviços Macatuba</title>
             <style>
               html, body { margin:0; padding:0; width:100%; height:100%; background:#000; overflow:hidden; font-family:Arial,sans-serif; }
               #canvas { display:block; width:100%; height:100%; border:0; padding:0; background:#000; }
@@ -236,7 +236,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add minecraft/classicube/game/ minecraft/classicube/versao.txt
+          git add minecraft/classicube/ minecraft/classicube/versao.txt
 
           if git diff --cached --quiet; then
             echo "Generated output is unchanged; no commit is needed."
