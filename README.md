@@ -13,7 +13,7 @@ Os projetos usam a branch `main`. Nos projetos do monorepo, a pasta indicada na 
 
 | Projeto | Diretório | Vercel — principal | Cloudflare Pages | Netlify | Firebase Hosting |
 |---|---|---|---|---|---|
-| JSMinecraft | `minecraft/jsminecraft/` | [qzz.io](https://jsminecraft.minecraft.jogos.servicos.centralmacatuba.qzz.io) · [dpdns.org](https://jsminecraft.minecraft.jogos.servicos.centralmacatuba.dpdns.org) | [Pages](https://centralmacatuba-servicos-jogos-minecraft-jsminecraft.pages.dev) | [Netlify](https://centralmacatuba-servicos-jogos-minecraft-jsminecraft.netlify.app) | [Firebase](https://jsminecraft.web.app) |
+| JSMinecraft | raiz de `jsminecraft/` | [qzz.io](https://jsminecraft.minecraft.jogos.servicos.centralmacatuba.qzz.io) · [dpdns.org](https://jsminecraft.minecraft.jogos.servicos.centralmacatuba.dpdns.org) | [Pages](https://centralmacatuba-servicos-jogos-minecraft-jsminecraft.pages.dev) | [Netlify](https://centralmacatuba-servicos-jogos-minecraft-jsminecraft.netlify.app) | [Firebase](https://jsminecraft.web.app) |
 | Eaglercraft Dev | `minecraft/eaglercraft-dev/` | [qzz.io](https://eaglercraft-dev.minecraft.jogos.servicos.centralmacatuba.qzz.io) · [dpdns.org](https://eaglercraft-dev.minecraft.jogos.servicos.centralmacatuba.dpdns.org) | [Pages](https://centralmacatuba-servicos-jogos-minecraft-eaglercraft-dev.pages.dev) | [Netlify](https://centralmacatuba-servicos-jogos-minecraft-eaglercraft-dev.netlify.app) | [Firebase](https://eaglercraft-dev.web.app) |
 | Eaglercraft IR | `minecraft/eaglercraft-ir/` | [qzz.io](https://eaglercraft-ir.minecraft.jogos.servicos.centralmacatuba.qzz.io) · [dpdns.org](https://eaglercraft-ir.minecraft.jogos.servicos.centralmacatuba.dpdns.org) | [Pages](https://centralmacatuba-servicos-jogos-minecraft-eaglercraft-ir.pages.dev) | [Netlify](https://centralmacatuba-servicos-jogos-minecraft-eaglercraft-ir.netlify.app) | [Firebase](https://eaglercraft-ir.web.app) |
 | Eaglercraft | `minecraft/eaglercraft/` | [qzz.io](https://eaglercraft.minecraft.jogos.servicos.centralmacatuba.qzz.io) · [dpdns.org](https://eaglercraft.minecraft.jogos.servicos.centralmacatuba.dpdns.org) | [Pages](https://centralmacatuba-servicos-jogos-minecraft-eaglercraft.pages.dev) | [Netlify](https://centralmacatuba-servicos-jogos-minecraft-eaglercraft.netlify.app) | [Firebase](https://eaglercraft-site.web.app) |
@@ -39,12 +39,13 @@ Os projetos usam a branch `main`. Nos projetos do monorepo, a pasta indicada na 
 - **Netlify:** projetos conectados ao GitHub, com deploy automático pela branch `main`.
 - **Firebase Hosting:** cópia publicada no projeto Firebase `centralmacatuba`.
 
-Para os 15 projetos dentro deste repositório, cada plataforma deve apontar para a pasta correspondente indicada na tabela. Os três projetos independentes (`games-site`, `tunnelrushtopvaz` e `tgcofficial`) usam a raiz de seus próprios repositórios.
+Para os 15 projetos dentro deste repositório, cada plataforma deve apontar para a pasta correspondente indicada na tabela. Os três projetos independentes (`jsminecraft`, `games-site`, `tunnelrushtopvaz` e `tgcofficial`) usam a raiz de seus próprios repositórios.
 
 ## Repositórios originais
 
 | Repositório | Projeto Vercel |
 |---|---|
+| [jsminecraft](https://github.com/centralmacatuba/jsminecraft) | `centralmacatuba-servicos-jogos-minecraft-jsminecraft` |
 | [games-site](https://github.com/centralmacatuba/games-site) | `centralmacatuba-servicos-jogos-games-site` |
 | [tunnelrushtopvaz](https://github.com/centralmacatuba/tunnelrushtopvaz) | `centralmacatuba-servicos-jogos-tunnelrushtopvaz` |
 | [tgcofficial](https://github.com/centralmacatuba/tgcofficial) | `centralmacatuba-servicos-jogos-tgcofficial` |
@@ -54,4 +55,3 @@ Para os 15 projetos dentro deste repositório, cada plataforma deve apontar para
 - O nome do projeto e o diretório de origem permanecem padronizados com os projetos `centralmacatuba-servicos-jogos-*` e `centralmacatuba-servicos-jogos-minecraft-*`.
 - Alguns IDs do Firebase Hosting são menores ou possuem sufixo porque a plataforma reserva determinados nomes ou limita o tamanho dos IDs. Isso não altera o nome, o repositório nem o diretório do projeto na Vercel, Netlify ou Cloudflare Pages.
 - Os links `qzz.io` da Vercel são apresentados como principais; os links `dpdns.org` são alternativas da mesma hospedagem.
-- O target Firebase do `mcraft` foi mantido com o diretório original `servicos-jogos/minecraft-mcraft/`, conforme a configuração solicitada; por isso, seu link Firebase pode retornar 404 se a raiz não contiver um `index.html`.
