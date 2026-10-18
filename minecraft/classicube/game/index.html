@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <meta name="theme-color" content="#000000">
+  <title>ClassiCube | Central Macatuba</title>
+  <style>
+    html, body { margin:0; padding:0; width:100%; height:100%; background:#000; overflow:hidden; font-family:Arial,sans-serif; }
+    #canvas { display:block; width:100%; height:100%; border:0; padding:0; background:#000; }
+    #login-screen { position:fixed; inset:0; z-index:2; display:flex; align-items:center; justify-content:center; background:#1b1f27; }
+    #login-box { box-sizing:border-box; max-width:calc(100% - 32px); padding:28px 24px; border-radius:10px; background:#fff; text-align:center; }
+    #login-box h1 { margin:0 0 16px; color:#2c3e50; font-size:20px; }
+    #username-input { box-sizing:border-box; width:100%; padding:10px; margin-bottom:12px; border:1px solid #ccc; border-radius:6px; font-size:16px; }
+    #login-box button { width:100%; padding:10px 16px; border:0; border-radius:6px; background:#2c7be5; color:#fff; font-size:15px; font-weight:bold; cursor:pointer; }
+    #logmsg { position:fixed; z-index:3; bottom:10px; left:10px; color:#fff; font-size:14px; }
+  </style>
+</head>
+<body>
+  <div id="login-screen">
+    <form id="login-box">
+      <h1>ClassiCube — Singleplayer</h1>
+      <input id="username-input" type="text" maxlength="32" autocomplete="nickname" placeholder="Nome do jogador" value="Player" aria-label="Nome do jogador">
+      <button type="submit">Jogar</button>
+    </form>
+  </div>
+  <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1" style="display:none"></canvas>
+  <span id="logmsg" role="status" aria-live="polite"></span>
+  <script>
+    const form = document.getElementById('login-box');
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      const username = document.getElementById('username-input').value.trim() || 'Player';
+      document.getElementById('login-screen').hidden = true;
+      document.getElementById('login-screen').style.display = 'none';
+      const canvas = document.getElementById('canvas');
+      canvas.style.display = 'block';
+      const Module = {
+        preRun: [], postRun: [], arguments: [username],
+        print: (...args) => console.log(args.join(' ')),
+        printErr: (...args) => console.error(args.join(' ')),
+        canvas,
+        setStatus: (text) => { document.getElementById('logmsg').textContent = text || ''; },
+        totalDependencies: 0,
+        monitorRunDependencies: function (left) {
+          this.totalDependencies = Math.max(this.totalDependencies, left);
+          this.setStatus(left ? 'Preparando… (' + (this.totalDependencies - left) + '/' + this.totalDependencies + ')' : 'Downloads concluídos.');
+        }
+      };
+      window.Module = Module;
+      Module.setStatus('Carregando ClassiCube…');
+      window.onerror = function (message) { Module.setStatus('Erro ao carregar o jogo. Consulte o console.'); console.error(message); };
+      const script = document.createElement('script');
+      script.src = 'ClassiCube.js';
+      script.async = true;
+      script.onerror = () => Module.setStatus('Não foi possível carregar ClassiCube.js.');
+      document.body.appendChild(script);
+    });
+  </script>
+</body>
+</html>
