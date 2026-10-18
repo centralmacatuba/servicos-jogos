@@ -2,14 +2,9 @@ name: Build Mcraft Web Client
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - "minecraft/mcraft/config.json"
-      - ".github/workflows/mcraft-build.yml"
   schedule:
-    - cron: "23 5 * * 1"
+    # Poll the upstream releases once per day. The build job runs only for a new tag.
+    - cron: "23 5 * * *"
 
 permissions:
   contents: write
@@ -19,7 +14,51 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  check-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      changed: ${{ steps.compare.outputs.changed }}
+      tag: ${{ steps.compare.outputs.tag }}
+    steps:
+      - name: Checkout Central Macatuba repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Check latest upstream release against versao.txt
+        id: compare
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          release_json="$(curl --fail --silent --show-error \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/zardoy/minecraft-web-client/releases/latest)"
+          tag="$(printf '%s' "$release_json" | jq -er 'select(.draft == false and .prerelease == false) | .tag_name')"
+          test -n "$tag"
+
+          current=""
+          if [ -f minecraft/mcraft/versao.txt ]; then
+            current="$(tr -d '\r\n' < minecraft/mcraft/versao.txt)"
+          fi
+
+          echo "Upstream latest release: $tag"
+          echo "Currently published version: ${current:-<not set>}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+          if [ "$tag" = "$current" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No new release; skipping the build."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "A new release was detected; the build will run."
+          fi
+
   build-and-publish:
+    needs: check-release
+    if: needs.check-release.outputs.changed == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -40,9 +79,9 @@ jobs:
           corepack enable
           corepack prepare pnpm@10.32.1 --activate
 
-      - name: Clone upstream Minecraft Web Client
+      - name: Clone the exact upstream release
         env:
-          UPSTREAM_REF: next
+          UPSTREAM_REF: ${{ needs.check-release.outputs.tag }}
         run: |
           git clone --depth 1 --branch "$UPSTREAM_REF" https://github.com/zardoy/minecraft-web-client.git upstream
           echo "UPSTREAM_SHA=$(git -C upstream rev-parse HEAD)" >> "$GITHUB_ENV"
@@ -64,14 +103,10 @@ jobs:
           import configJson from '../config.json'
           import type { AppConfig } from './appConfig'
 
-          // Compile-time check against the upstream AppConfig interface.
           const checkedConfig: AppConfig = configJson
           void checkedConfig
           EOF
 
-          # appConfig.ts currently declares promoteServers.ip without an explicit
-          # type, so also validate important runtime invariants that TypeScript
-          # cannot infer from that interface.
           node --input-type=module <<'EOF'
           import fs from 'node:fs'
 
@@ -102,7 +137,7 @@ jobs:
             if (!Array.isArray(config.p2pTurnServers)) errors.push('"p2pTurnServers" must be an array')
             else config.p2pTurnServers.forEach((server, i) => {
               if (!server || typeof server !== 'object' || !(typeof server.urls === 'string' || (Array.isArray(server.urls) && server.urls.every(v => typeof v === 'string')))) errors.push('"p2pTurnServers['+i+'].urls" must be a string or array of strings')
-              for (const key of ['username', 'credential']) if (server?.[key] !== undefined && typeof server[key] !== 'string') errors.push('"p2pTurnServers['+i+'].'+key+'" must be a string')
+              for (const key of ['username', 'credential']) if (server?.[key] !== undefined && typeof server[key] !== 'string') errors.push('"p2pTurnServers['+i+'].'+key+' must be a string')
             })
           }
           if (errors.length) {
@@ -135,17 +170,20 @@ jobs:
           test -s minecraft/mcraft/game/config.json
           node -e "JSON.parse(require('fs').readFileSync('minecraft/mcraft/game/config.json', 'utf8'))"
 
-      - name: Commit generated files when changed
+      - name: Update version marker and commit all generated files together
         env:
-          UPSTREAM_SHA: ${{ env.UPSTREAM_SHA }}
-          GH_TOKEN: ${{ github.token }}
+          UPSTREAM_TAG: ${{ needs.check-release.outputs.tag }}
         run: |
+          set -euo pipefail
+          printf '%s\n' "$UPSTREAM_TAG" > minecraft/mcraft/versao.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add minecraft/mcraft/game/
+          git add minecraft/mcraft/game/ minecraft/mcraft/versao.txt
+
           if git diff --cached --quiet; then
-            echo "Generated files are unchanged; no commit needed."
+            echo "Generated files and version marker are unchanged; no commit needed."
             exit 0
           fi
-          git commit -m "build(mcraft): publish web client from upstream"
+
+          git commit -m "build(mcraft): publish upstream release $UPSTREAM_TAG"
           git push origin HEAD:main
