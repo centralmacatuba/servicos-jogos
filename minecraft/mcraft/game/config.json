@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "defaultHost": "<from-proxy>",
+  "defaultProxy": "https://proxy.mcraft.fun",
+  "defaultProxies": [
+    "https://proxy.mcraft.fun",
+    "https://proxy2.mcraft.fun",
+    "https://proxy3.mcraft.fun",
+    "https://pwc.koyeb.app",
+    "https://proxy.mcraft.centralmacatuba.qzz.io"
+  ],
+  "mapsProvider": "https://maps.mcraft.centralmacatuba.qzz.io/",
+  "skinTexturesProxy": "https://texture.proxy.mcraft.centralmacatuba.qzz.io",
+  "p2pRelayServer": "wss://p2p.mcraft.fun",
+  "p2pRelayServerFallback": "wss://p2p.mcraft.centralmacatuba.qzz.io",
+  "p2pTurnServers": [
+    {
+      "urls": "stun:stun.l.google.com:19302"
+    },
+    {
+      "urls": "stun:stun1.l.google.com:19302"
+    },
+    {
+      "urls": "stun:stun2.l.google.com:19302"
+    },
+    {
+      "urls": "stun:stun3.l.google.com:19302"
+    },
+    {
+      "urls": "stun:stun4.l.google.com:19302"
+    },
+    {
+      "urls": "stun:stun.cloudflare.com:3478"
+    },
+    {
+      "urls": "stun:stun.nextcloud.com:3478"
+    },
+    {
+      "urls": "stun:stun.relay.metered.ca:80"
+    },
+    {
+      "urls": "stun:stun.turnix.io:3478"
+    },
+    {
+      "urls": "stun:to-turn2.xirsys.com"
+    }
+  ],
+  "promoteServers": [
+    {
+      "ip": "wss://mcraft.centralmacatuba.qzz.io",
+      "name": "Central Macatuba - Mcraft",
+      "description": "Jogue Minecraft diretamente no navegador com o Mcraft da Central Macatuba."
+    },
+    {
+      "ip": "wss://play.mcraft.fun",
+      "description": "Servidor Minecraft listado: play.mcraft.fun."
+    },
+    {
+      "ip": "wss://play.webmc.fun",
+      "name": "WebMC",
+      "description": "Servidor Minecraft listado: play.webmc.fun."
+    },
+    {
+      "ip": "wss://ws.fuchsmc.net",
+      "description": "Servidor Minecraft listado: ws.fuchsmc.net."
+    },
+    {
+      "ip": "wss://play2.mcraft.fun",
+      "description": "Espelho para play.mcraft.fun"
+    },
+    {
+      "ip": "wss://play3.mcraft.fun",
+      "description": "Espelho para play.mcraft.fun"
+    },
+    {
+      "ip": "wss://play-creative.mcraft.fun",
+      "description": "Pode estar disponível em breve, fique atento!"
+    }
+  ],
+  "rightSideText": "Um clone do cliente Minecraft no navegador!",
+  "splashText": "Cuidado com os insetos e divirta-se!",
+  "splashTextFallback": "Bem-vindo!",
+  "defaultLanguage": "pt-br",
+  "pauseLinks": [
+    [
+      {
+        "type": "github"
+      },
+      {
+        "type": "discord"
+      }
+    ]
+  ],
+  "defaultUsername": "mcrafter{0-9999}",
+  "mobileButtons": [
+    {
+      "action": "general.selectItem",
+      "actionHold": "",
+      "label": "S"
+    },
+    {
+      "action": "general.debugOverlay",
+      "actionHold": "general.debugOverlayHelpMenu",
+      "label": "F3"
+    },
+    {
+      "action": "general.playersList",
+      "actionHold": "",
+      "icon": "pixelarticons:users",
+      "label": "TAB"
+    },
+    {
+      "action": "general.chat",
+      "actionHold": "",
+      "label": ""
+    },
+    {
+      "action": "ui.pauseMenu",
+      "actionHold": "",
+      "label": ""
+    }
+  ]
+}
