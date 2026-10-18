@@ -48,7 +48,8 @@
   "promoteServers": [
     {
       "ip": "wss://mcraft.centralmacatuba.qzz.io",
-      "name": "Central Macatuba - Mcraft"
+      "name": "Central Macatuba - Mcraft",
+      "description": "Jogue Minecraft diretamente no navegador com o Mcraft da Central Macatuba."
     },
     {
       "ip": "wss://play.mcraft.fun"
