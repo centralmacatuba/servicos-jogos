@@ -147,7 +147,7 @@ jobs:
           console.log('config.json passed JSON and runtime shape validation.')
           EOF
 
-          pnpm exec tsc --noEmit --skipLibCheck --resolveJsonModule --esModuleInterop --moduleResolution node --module esnext --target esnext --jsx react-jsx src/__cm_config_check.ts
+          pnpm exec tsc --noEmit --resolveJsonModule
           rm src/__cm_config_check.ts
 
       - name: Prepare project and build production client
