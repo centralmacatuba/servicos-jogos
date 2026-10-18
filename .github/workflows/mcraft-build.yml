@@ -147,16 +147,16 @@ jobs:
           console.log('config.json passed JSON and runtime shape validation.')
           EOF
 
+          trap 'rm -f src/__cm_config_check.ts' EXIT
+          pnpm prepare-project
           pnpm exec tsc --noEmit --resolveJsonModule
-          rm src/__cm_config_check.ts
 
-      - name: Prepare project and build production client
+      - name: Build production client
         working-directory: upstream
         env:
           CONFIG_JSON_SOURCE: REMOTE
           DISABLE_SERVICE_WORKER: "false"
         run: |
-          pnpm prepare-project
           pnpm build
           test -s dist/index.html
           test -s dist/config.json
