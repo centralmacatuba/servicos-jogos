@@ -1,0 +1,153 @@
+name: Build Mcraft Web Client
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "minecraft/mcraft/config.json"
+      - ".github/workflows/mcraft-build.yml"
+  schedule:
+    - cron: "23 5 * * 1"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mcraft-web-client-build
+  cancel-in-progress: false
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout Central Macatuba repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: minecraft/mcraft/config.json
+
+      - name: Install pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.32.1 --activate
+
+      - name: Clone upstream Minecraft Web Client
+        env:
+          UPSTREAM_REF: next
+        run: |
+          git clone --depth 1 --branch "$UPSTREAM_REF" https://github.com/zardoy/minecraft-web-client.git upstream
+          echo "UPSTREAM_SHA=$(git -C upstream rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Install upstream dependencies
+        working-directory: upstream
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply Central Macatuba configuration
+        run: |
+          test -s minecraft/mcraft/config.json
+          node -e "JSON.parse(require('fs').readFileSync('minecraft/mcraft/config.json', 'utf8'))"
+          cp minecraft/mcraft/config.json upstream/config.json
+
+      - name: Validate config.json against appConfig.ts
+        working-directory: upstream
+        run: |
+          cat > src/__cm_config_check.ts <<'EOF'
+          import configJson from '../config.json'
+          import type { AppConfig } from './appConfig'
+
+          // Compile-time check against the upstream AppConfig interface.
+          const checkedConfig: AppConfig = configJson
+          void checkedConfig
+          EOF
+
+          # appConfig.ts currently declares promoteServers.ip without an explicit
+          # type, so also validate important runtime invariants that TypeScript
+          # cannot infer from that interface.
+          node --input-type=module <<'EOF'
+          import fs from 'node:fs'
+
+          const config = JSON.parse(fs.readFileSync('config.json', 'utf8'))
+          const errors = []
+          if (config.version !== undefined && typeof config.version !== 'number') {
+            errors.push('"version" must be a number')
+          }
+          for (const key of ['defaultProxy', 'mapsProvider', 'skinTexturesProxy', 'p2pRelayServer', 'p2pRelayServerFallback', 'rightSideText', 'splashText', 'splashTextFallback', 'defaultUsername', 'defaultLanguage']) {
+            if (config[key] !== undefined && typeof config[key] !== 'string') errors.push('"'+key+'" must be a string')
+          }
+          for (const key of ['defaultProxies', 'supportedLanguages', 'disabledCommands']) {
+            if (config[key] !== undefined && (!Array.isArray(config[key]) || !config[key].every(v => typeof v === 'string'))) errors.push('"'+key+'" must be an array of strings')
+          }
+          for (const key of ['p2pRelayServer', 'p2pRelayServerFallback']) {
+            if (config[key] !== undefined && !/^wss:\/\//i.test(config[key])) errors.push('"'+key+'" must use wss://')
+          }
+          if (config.promoteServers !== undefined) {
+            if (!Array.isArray(config.promoteServers)) errors.push('"promoteServers" must be an array')
+            else config.promoteServers.forEach((server, i) => {
+              if (!server || typeof server !== 'object' || typeof server.ip !== 'string' || !server.ip.trim()) errors.push('"promoteServers['+i+'].ip" must be a non-empty string')
+              for (const key of ['description', 'name', 'version']) {
+                if (server?.[key] !== undefined && typeof server[key] !== 'string') errors.push('"promoteServers['+i+'].'+key+'" must be a string')
+              }
+            })
+          }
+          if (config.p2pTurnServers !== undefined) {
+            if (!Array.isArray(config.p2pTurnServers)) errors.push('"p2pTurnServers" must be an array')
+            else config.p2pTurnServers.forEach((server, i) => {
+              if (!server || typeof server !== 'object' || !(typeof server.urls === 'string' || (Array.isArray(server.urls) && server.urls.every(v => typeof v === 'string')))) errors.push('"p2pTurnServers['+i+'].urls" must be a string or array of strings')
+              for (const key of ['username', 'credential']) if (server?.[key] !== undefined && typeof server[key] !== 'string') errors.push('"p2pTurnServers['+i+'].'+key+'" must be a string')
+            })
+          }
+          if (errors.length) {
+            console.error('Invalid config.json:\n- ' + errors.join('\n- '))
+            process.exit(1)
+          }
+          console.log('config.json passed JSON and runtime shape validation.')
+          EOF
+
+          pnpm exec tsc --noEmit --skipLibCheck --resolveJsonModule --esModuleInterop --moduleResolution node --module esnext --target esnext --jsx react-jsx src/__cm_config_check.ts
+          rm src/__cm_config_check.ts
+
+      - name: Prepare project and build production client
+        working-directory: upstream
+        env:
+          CONFIG_JSON_SOURCE: REMOTE
+          DISABLE_SERVICE_WORKER: "false"
+        run: |
+          pnpm prepare-project
+          pnpm build
+          test -s dist/index.html
+          test -s dist/config.json
+          node -e "JSON.parse(require('fs').readFileSync('dist/config.json', 'utf8'))"
+
+      - name: Publish generated web client into minecraft/mcraft/game
+        run: |
+          mkdir -p minecraft/mcraft/game
+          rsync -a --delete upstream/dist/ minecraft/mcraft/game/
+          test -s minecraft/mcraft/game/index.html
+          test -s minecraft/mcraft/game/config.json
+          node -e "JSON.parse(require('fs').readFileSync('minecraft/mcraft/game/config.json', 'utf8'))"
+
+      - name: Commit generated files when changed
+        env:
+          UPSTREAM_SHA: ${{ env.UPSTREAM_SHA }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add minecraft/mcraft/game/
+          if git diff --cached --quiet; then
+            echo "Generated files are unchanged; no commit needed."
+            exit 0
+          fi
+          git commit -m "build(mcraft): publish web client from upstream"
+          git push origin HEAD:main
