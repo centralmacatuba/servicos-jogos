@@ -1,0 +1,244 @@
+name: Build ClassiCube Web Client
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versão oficial do ClassiCube (ex.: 1.3.8). Deixe vazio para usar a última release estável."
+        required: false
+        type: string
+        default: ""
+  schedule:
+    # Verifica diariamente se saiu uma nova release estável; só compila quando a versão mudar.
+    - cron: "41 5 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: classicube-web-client-build
+  cancel-in-progress: false
+
+jobs:
+  check-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      changed: ${{ steps.compare.outputs.changed }}
+      tag: ${{ steps.compare.outputs.tag }}
+    steps:
+      - name: Checkout Central Macatuba repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Resolve and compare official ClassiCube release
+        id: compare
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "${REQUESTED_VERSION//[[:space:]]/}" ]; then
+            version="${REQUESTED_VERSION#v}"
+            release_url="https://api.github.com/repos/ClassiCube/ClassiCube/releases/tags/$version"
+          else
+            release_url="https://api.github.com/repos/ClassiCube/ClassiCube/releases/latest"
+          fi
+
+          release_json="$(curl --fail --silent --show-error \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "$release_url")"
+
+          tag="$(printf '%s' "$release_json" | jq -er '
+            select(.draft == false and .prerelease == false) |
+            .tag_name |
+            select(test("^v?[0-9]+\\.[0-9]+(\\.[0-9]+)?([.-][0-9A-Za-z.-]+)?$"))
+          ')"
+          tag="${tag#v}"
+          test -n "$tag"
+
+          current=""
+          if [ -f minecraft/classicube/versao.txt ]; then
+            current="$(tr -d '\r\n[:space:]' < minecraft/classicube/versao.txt)"
+          fi
+
+          echo "Official release: $tag"
+          echo "Published version: ${current:-<not set>}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+          if [ "$tag" = "$current" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Version already built; skipping compilation."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "A different version was requested; compilation is required."
+          fi
+
+  build-and-publish:
+    needs: check-release
+    if: needs.check-release.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout Central Macatuba repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 3.1.74
+          actions-cache-folder: emsdk-cache
+
+      - name: Clone exact official ClassiCube version
+        env:
+          UPSTREAM_TAG: ${{ needs.check-release.outputs.tag }}
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch "$UPSTREAM_TAG" https://github.com/ClassiCube/ClassiCube.git upstream
+          echo "UPSTREAM_SHA=$(git -C upstream rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "Building ClassiCube tag: $UPSTREAM_TAG"
+          emcc --version
+          make --version
+
+      - name: Compile the WebAssembly client
+        working-directory: upstream
+        run: |
+          set -euo pipefail
+          emmake make web RELEASE=1 -j2
+          test -s ClassiCube.js
+          test -s ClassiCube.wasm
+          test -s ClassiCube.html
+
+      - name: Download and validate official default texture pack
+        run: |
+          set -euo pipefail
+          mkdir -p minecraft/classicube/game
+          curl --fail --location --silent --show-error \
+            --retry 3 --retry-all-errors \
+            https://classicube.net/static/default.zip \
+            --output minecraft/classicube/game/default.zip
+          test -s minecraft/classicube/game/default.zip
+          unzip -tq minecraft/classicube/game/default.zip
+
+      - name: Publish compiled files and create game launcher
+        env:
+          UPSTREAM_TAG: ${{ needs.check-release.outputs.tag }}
+        run: |
+          set -euo pipefail
+          out="minecraft/classicube/game"
+          cp upstream/ClassiCube.js "$out/ClassiCube.js"
+          cp upstream/ClassiCube.wasm "$out/ClassiCube.wasm"
+
+          # The official web client defaults to /static/default.zip. This game is
+          # hosted in a subdirectory, so make the texture-pack URL relative.
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("minecraft/classicube/game/ClassiCube.js")
+          data = path.read_text(encoding="utf-8")
+          replacements = (
+              ("'/static/default.zip'", "'default.zip'"),
+              ('"/static/default.zip"', '"default.zip"'),
+          )
+          for old, new in replacements:
+              data = data.replace(old, new)
+          if "/static/default.zip" in data:
+              raise SystemExit("Could not safely rewrite the default texture-pack URL")
+          if "default.zip" not in data:
+              raise SystemExit("The compiled client does not contain a default.zip URL to validate")
+          path.write_text(data, encoding="utf-8")
+          PY
+
+          cat > "$out/index.html" <<'HTML'
+          <!doctype html>
+          <html lang="pt-BR">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+            <meta name="theme-color" content="#000000">
+            <title>ClassiCube | Central Macatuba</title>
+            <style>
+              html, body { margin:0; padding:0; width:100%; height:100%; background:#000; overflow:hidden; font-family:Arial,sans-serif; }
+              #canvas { display:block; width:100%; height:100%; border:0; padding:0; background:#000; }
+              #login-screen { position:fixed; inset:0; z-index:2; display:flex; align-items:center; justify-content:center; background:#1b1f27; }
+              #login-box { box-sizing:border-box; max-width:calc(100% - 32px); padding:28px 24px; border-radius:10px; background:#fff; text-align:center; }
+              #login-box h1 { margin:0 0 16px; color:#2c3e50; font-size:20px; }
+              #username-input { box-sizing:border-box; width:100%; padding:10px; margin-bottom:12px; border:1px solid #ccc; border-radius:6px; font-size:16px; }
+              #login-box button { width:100%; padding:10px 16px; border:0; border-radius:6px; background:#2c7be5; color:#fff; font-size:15px; font-weight:bold; cursor:pointer; }
+              #logmsg { position:fixed; z-index:3; bottom:10px; left:10px; color:#fff; font-size:14px; }
+            </style>
+          </head>
+          <body>
+            <div id="login-screen">
+              <form id="login-box">
+                <h1>ClassiCube — Singleplayer</h1>
+                <input id="username-input" type="text" maxlength="32" autocomplete="nickname" placeholder="Nome do jogador" value="Player" aria-label="Nome do jogador">
+                <button type="submit">Jogar</button>
+              </form>
+            </div>
+            <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1" style="display:none"></canvas>
+            <span id="logmsg" role="status" aria-live="polite"></span>
+            <script>
+              const form = document.getElementById('login-box');
+              form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                const username = document.getElementById('username-input').value.trim() || 'Player';
+                document.getElementById('login-screen').hidden = true;
+                document.getElementById('login-screen').style.display = 'none';
+                const canvas = document.getElementById('canvas');
+                canvas.style.display = 'block';
+                const Module = {
+                  preRun: [], postRun: [], arguments: [username],
+                  print: (...args) => console.log(args.join(' ')),
+                  printErr: (...args) => console.error(args.join(' ')),
+                  canvas,
+                  setStatus: (text) => { document.getElementById('logmsg').textContent = text || ''; },
+                  totalDependencies: 0,
+                  monitorRunDependencies: function (left) {
+                    this.totalDependencies = Math.max(this.totalDependencies, left);
+                    this.setStatus(left ? 'Preparando… (' + (this.totalDependencies - left) + '/' + this.totalDependencies + ')' : 'Downloads concluídos.');
+                  }
+                };
+                window.Module = Module;
+                Module.setStatus('Carregando ClassiCube…');
+                window.onerror = function (message) { Module.setStatus('Erro ao carregar o jogo. Consulte o console.'); console.error(message); };
+                const script = document.createElement('script');
+                script.src = 'ClassiCube.js';
+                script.async = true;
+                script.onerror = () => Module.setStatus('Não foi possível carregar ClassiCube.js.');
+                document.body.appendChild(script);
+              });
+            </script>
+          </body>
+          </html>
+          HTML
+
+          # Keep the generated site output limited to known build artifacts.
+          test -s "$out/index.html"
+          test -s "$out/ClassiCube.js"
+          test -s "$out/ClassiCube.wasm"
+          test -s "$out/default.zip"
+          printf '%s\n' "$UPSTREAM_TAG" > minecraft/classicube/versao.txt
+          printf '%s\n' "$UPSTREAM_SHA" > minecraft/classicube/game/source-commit.txt
+
+      - name: Commit generated client and version marker
+        env:
+          UPSTREAM_TAG: ${{ needs.check-release.outputs.tag }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add minecraft/classicube/game/ minecraft/classicube/versao.txt
+
+          if git diff --cached --quiet; then
+            echo "Generated output is unchanged; no commit is needed."
+            exit 0
+          fi
+
+          git commit -m "build(classicube): compile upstream release $UPSTREAM_TAG"
+          git push origin HEAD:main
