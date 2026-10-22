@@ -27,11 +27,6 @@ jobs:
       changed: ${{ steps.compare.outputs.changed }}
       tag: ${{ steps.compare.outputs.tag }}
     steps:
-      - name: Checkout Central Macatuba repository
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
       - name: Resolve and compare official ClassiCube release
         id: compare
         env:
@@ -59,10 +54,9 @@ jobs:
           tag="${tag#v}"
           test -n "$tag"
 
-          current=""
-          if [ -f minecraft/classicube/versao.txt ]; then
-            current="$(tr -d '\r\n[:space:]' < minecraft/classicube/versao.txt)"
-          fi
+          current="$(curl --fail --silent --show-error \
+            "https://raw.githubusercontent.com/centralmacatuba/servicos-jogos/main/minecraft/classicube/versao.txt?cachebust=${GITHUB_RUN_ID}" \
+            | tr -d '\r\n[:space:]')"
 
           echo "Official release: $tag"
           echo "Published version: ${current:-<not set>}"
