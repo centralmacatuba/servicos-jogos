@@ -101,7 +101,6 @@ jobs:
         env:
           CONFIG_JSON_SOURCE: REMOTE
           DISABLE_SERVICE_WORKER: "false"
-          BUILD_DISPLAY_DATE: ${{ github.run_started_at }}
         run: |
           set -euo pipefail
           pnpm build
