@@ -21,15 +21,8 @@ jobs:
       changed: ${{ steps.compare.outputs.changed }}
       tag: ${{ steps.compare.outputs.tag }}
     steps:
-      - name: Checkout Central Macatuba repository
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
       - name: Check latest upstream release against versao.txt
         id: compare
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           release_json="$(curl --fail --silent --show-error \
@@ -39,10 +32,9 @@ jobs:
           tag="$(printf '%s' "$release_json" | jq -er 'select(.draft == false and .prerelease == false) | .tag_name')"
           test -n "$tag"
 
-          current=""
-          if [ -f minecraft/mcraft/versao.txt ]; then
-            current="$(tr -d '\r\n' < minecraft/mcraft/versao.txt)"
-          fi
+          current="$(curl --fail --silent --show-error \
+            "https://raw.githubusercontent.com/centralmacatuba/servicos-jogos/main/minecraft/mcraft/versao.txt?cachebust=${GITHUB_RUN_ID}" \
+            | tr -d '\r\n[:space:]')"
 
           echo "Upstream latest release: $tag"
           echo "Currently published version: ${current:-<not set>}"
