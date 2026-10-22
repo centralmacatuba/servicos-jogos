@@ -1,0 +1,158 @@
+name: Build Mcraft PeerJS Historical Client
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mcraft-peerjs-historical-build
+  cancel-in-progress: false
+
+jobs:
+  build-and-publish:
+    name: Build pinned PeerJS-era revision
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    env:
+      UPSTREAM_REPOSITORY: https://github.com/zardoy/minecraft-web-client.git
+      UPSTREAM_SHA: 4f5243c245c96aac44bbe147c61a4ea5612338f9
+      BUILD_ID: peerjs-4f5243c
+
+    steps:
+      - name: Check out this branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.32.1 --activate
+          pnpm --version
+
+      - name: Fetch the exact historical upstream commit
+        run: |
+          set -euo pipefail
+          git init upstream
+          git -C upstream remote add origin "$UPSTREAM_REPOSITORY"
+          git -C upstream fetch --depth=1 origin "$UPSTREAM_SHA"
+          git -C upstream checkout --detach FETCH_HEAD
+          actual_sha="$(git -C upstream rev-parse HEAD)"
+          test "$actual_sha" = "$UPSTREAM_SHA"
+          echo "Built source revision: $actual_sha"
+
+      - name: Install dependencies from the historical lockfile
+        working-directory: upstream
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate and apply the PeerJS configuration
+        run: |
+          set -euo pipefail
+          test -s minecraft/mcraft/config.peerjs.json
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs'
+          const config = JSON.parse(fs.readFileSync('minecraft/mcraft/config.peerjs.json', 'utf8'))
+          const errors = []
+          for (const key of ['defaultProxy', 'peerJsServer', 'peerJsServerFallback']) {
+            if (typeof config[key] !== 'string' || !config[key].trim()) errors.push(`"${key}" must be a non-empty string`)
+          }
+          for (const key of ['peerJsServer', 'peerJsServerFallback']) {
+            if (typeof config[key] === 'string' && !/^wss:\/\//i.test(config[key])) errors.push(`"${key}" must use wss://`)
+          }
+          if (config.defaultProxies !== undefined && (!Array.isArray(config.defaultProxies) || !config.defaultProxies.every(v => typeof v === 'string'))) {
+            errors.push('"defaultProxies" must be an array of strings')
+          }
+          if (config.promoteServers !== undefined && (!Array.isArray(config.promoteServers) || !config.promoteServers.every(v => v && typeof v.ip === 'string'))) {
+            errors.push('"promoteServers" must be an array of objects with string ip fields')
+          }
+          if (errors.length) {
+            console.error(errors.join('\n'))
+            process.exit(1)
+          }
+          console.log('PeerJS configuration passed JSON and required-field validation.')
+          NODE
+          cp minecraft/mcraft/config.peerjs.json upstream/config.json
+
+      - name: Type-check the historical config against AppConfig
+        working-directory: upstream
+        run: |
+          set -euo pipefail
+          cat > src/__cm_peerjs_config_check.ts <<'EOF'
+          import configJson from '../config.json'
+          import type { AppConfig } from './appConfig'
+
+          const checkedConfig: AppConfig = configJson
+          void checkedConfig
+          EOF
+          trap 'rm -f src/__cm_peerjs_config_check.ts' EXIT
+          pnpm prepare-project
+          pnpm exec tsc --noEmit --resolveJsonModule
+
+      - name: Build the historical client
+        working-directory: upstream
+        env:
+          CONFIG_JSON_SOURCE: REMOTE
+          DISABLE_SERVICE_WORKER: "false"
+        run: |
+          set -euo pipefail
+          pnpm build
+          test -s dist/index.html
+          test -s dist/config.json
+          node -e "JSON.parse(require('fs').readFileSync('dist/config.json', 'utf8'))"
+
+      - name: Publish build to the isolated PeerJS directory
+        run: |
+          set -euo pipefail
+          target="minecraft/mcraft/game-peerjs"
+          staging="minecraft/mcraft/.game-peerjs-staging-${GITHUB_RUN_ID}"
+          backup="minecraft/mcraft/.game-peerjs-backup-${GITHUB_RUN_ID}"
+          cleanup() {
+            rm -rf "$staging"
+            if [ -d "$backup" ] && [ ! -e "$target" ]; then
+              mv "$backup" "$target"
+            fi
+          }
+          trap cleanup EXIT
+
+          mkdir -p "$staging"
+          rsync -a upstream/dist/ "$staging/"
+          test -s "$staging/index.html"
+          test -s "$staging/config.json"
+          node -e "JSON.parse(require('fs').readFileSync('$staging/config.json', 'utf8'))"
+          printf '%s\n' "$BUILD_ID" > "$staging/versao-peerjs.txt"
+          printf '%s\n' "$UPSTREAM_SHA" > "$staging/commit-upstream.txt"
+
+          if [ -e "$target" ]; then mv "$target" "$backup"; fi
+          if mv "$staging" "$target"; then
+            rm -rf "$backup"
+          else
+            if [ -e "$backup" ] && [ ! -e "$target" ]; then mv "$backup" "$target"; fi
+            exit 1
+          fi
+          trap - EXIT
+
+          # Keep the root-level marker consistent with the deployed historical client.
+          printf '%s\n' "$BUILD_ID ($UPSTREAM_SHA)" > minecraft/mcraft/versao-peerjs.txt
+
+      - name: Commit the generated historical client on the current branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add minecraft/mcraft/game-peerjs/ minecraft/mcraft/versao-peerjs.txt
+
+          if git diff --cached --quiet; then
+            echo "The generated PeerJS client is unchanged; no commit is needed."
+            exit 0
+          fi
+
+          git commit -m "build(mcraft): publish pinned PeerJS historical client"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
