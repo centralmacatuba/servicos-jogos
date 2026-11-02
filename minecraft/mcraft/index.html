@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#07101d">
+  <link rel="icon" href="https://cdn.r2.centralmacatuba.qzz.io/ARQUIVOS/IMAGENS/MCRAFT/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="https://cdn.r2.centralmacatuba.qzz.io/ARQUIVOS/IMAGENS/MCRAFT/logo_pequeno.png">
   <meta name="description" content="Jogue Mcraft diretamente no navegador e conheça os serviços que dão suporte à experiência multiplayer.">
   <title>Mcraft — Minecraft no navegador | Central Macatuba</title>
   <style>
@@ -41,9 +43,13 @@
     }
     .brand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; font-weight: 800; letter-spacing: .02em; }
     .brand-mark {
-      display: grid; place-items: center; width: 38px; height: 38px;
-      border-radius: 12px; background: var(--lime); color: #07101d;
-      font-size: 1rem; font-weight: 950;
+      display: block; width: 42px; height: 42px; object-fit: contain;
+      border-radius: 10px;
+    }
+    .hero-logo {
+      display: block; width: min( min(420px, 78vw), 100%); height: auto;
+      max-height: 150px; object-fit: contain; margin: 0 auto 24px;
+      filter: drop-shadow(0 12px 28px rgba(0, 0, 0, .28));
     }
     .brand small { display: block; color: var(--muted); font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
     .top-link { color: var(--muted); font-size: .9rem; text-decoration: none; }
@@ -93,10 +99,11 @@
     }
     .service-top { display: flex; align-items: center; gap: 13px; margin-bottom: 10px; }
     .icon {
-      display: grid; place-items: center; flex: 0 0 42px; height: 42px;
-      border-radius: 12px; background: rgba(125, 228, 225, .1); color: var(--cyan);
-      font-size: 1.2rem; font-weight: 900;
+      display: grid; place-items: center; flex: 0 0 54px; width: 54px; height: 54px;
+      padding: 5px; border-radius: 12px; background: rgba(255, 255, 255, .055);
+      border: 1px solid var(--line);
     }
+    .icon img { display: block; width: 100%; height: 100%; object-fit: contain; }
     .service h3 { margin: 0; font-size: 1.08rem; }
     .service p { margin: 0; color: var(--muted); font-size: .94rem; }
     .service a { display: inline-block; margin-top: 12px; color: var(--cyan); font-size: .86rem; font-weight: 700; text-decoration: none; overflow-wrap: anywhere; }
@@ -124,7 +131,7 @@
 <body>
   <header class="wrap topbar">
     <a class="brand" href="./" aria-label="Mcraft — Central Macatuba">
-      <span class="brand-mark" aria-hidden="true">CM</span>
+      <img class="brand-mark" src="https://cdn.r2.centralmacatuba.qzz.io/ARQUIVOS/IMAGENS/MCRAFT/logo_pequeno.png" alt="">
       <span>Mcraft<small>Central Macatuba</small></span>
     </a>
     <a class="top-link" href="#servicos">Conheça os serviços ↓</a>
@@ -132,6 +139,7 @@
 
   <main class="wrap">
     <section class="hero" aria-labelledby="page-title">
+      <img class="hero-logo" src="https://cdn.r2.centralmacatuba.qzz.io/ARQUIVOS/IMAGENS/SERVICOS/JOGOS/MINECRAFT/mcraft_logo.png" alt="Mcraft" width="420" height="150" fetchpriority="high">
       <span class="eyebrow">Minecraft direto no navegador</span>
       <h1 id="page-title">Seu mundo.<br><span>Seu jeito de jogar.</span></h1>
       <p class="intro">
@@ -174,7 +182,7 @@
       <div class="services">
         <article class="service">
           <div class="service-top">
-            <span class="icon" aria-hidden="true">▦</span>
+            <span class="icon"><img src="https://cdn.r2.centralmacatuba.qzz.io/ARQUIVOS/IMAGENS/MCRAFT/MAPS/logo_pequeno.png" alt="" loading="lazy" width="44" height="44"></span>
             <h3>Mcraft Maps</h3>
           </div>
           <p>Catálogo de mundos e mapas para descobrir novas experiências e abrir conteúdos diretamente no cliente.</p>
@@ -183,7 +191,7 @@
 
         <article class="service">
           <div class="service-top">
-            <span class="icon" aria-hidden="true">⌘</span>
+            <span class="icon"><img src="https://cdn.r2.centralmacatuba.qzz.io/ARQUIVOS/IMAGENS/MCRAFT/P2P/logo_pequeno.png" alt="" loading="lazy" width="44" height="44"></span>
             <h3>Relay multiplayer Trystero</h3>
           </div>
           <p>Ajuda os jogadores a se encontrarem e iniciarem a conexão multiplayer. Depois da negociação, o jogo procura trocar dados diretamente entre os participantes.</p>
@@ -192,7 +200,7 @@
 
         <article class="service">
           <div class="service-top">
-            <span class="icon" aria-hidden="true">↔</span>
+            <span class="icon"><img src="https://cdn.r2.centralmacatuba.qzz.io/ARQUIVOS/IMAGENS/MCRAFT/P2P-PEERJS/logo_pequeno.png" alt="" loading="lazy" width="44" height="44"></span>
             <h3>Sinalização PeerJS</h3>
           </div>
           <p>Serviço de compatibilidade para clientes antigos que ainda utilizam o sistema multiplayer PeerJS. Não substitui o relay Trystero.</p>
@@ -201,7 +209,7 @@
 
         <article class="service">
           <div class="service-top">
-            <span class="icon" aria-hidden="true">◇</span>
+            <span class="icon"><img src="https://cdn.r2.centralmacatuba.qzz.io/ARQUIVOS/IMAGENS/MCRAFT/PROXY/TEXTURE/logo_pequeno.png" alt="" loading="lazy" width="44" height="44"></span>
             <h3>Proxy de texturas</h3>
           </div>
           <p>Intermedia de forma restrita o carregamento de texturas do Minecraft, ajudando o cliente a exibir elementos visuais dos jogadores.</p>
