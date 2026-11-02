@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07101d">
+  <meta name="description" content="Jogue Mcraft diretamente no navegador e conheça os serviços que dão suporte à experiência multiplayer.">
+  <title>Mcraft — Minecraft no navegador | Central Macatuba</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07101d;
+      --panel: #0d1c2c;
+      --panel-2: #10243a;
+      --line: rgba(194, 220, 235, .13);
+      --text: #e8eef3;
+      --muted: #a9bac8;
+      --lime: #c5f36a;
+      --cyan: #7de4e1;
+      --accent: #ff5b5b;
+      --radius: 20px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 12% 0%, rgba(125, 228, 225, .12), transparent 34rem),
+        radial-gradient(ellipse at 95% 18%, rgba(197, 243, 106, .09), transparent 30rem),
+        var(--bg);
+      color: var(--text);
+      font: 16px/1.65 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: inherit; }
+    .wrap { width: min(1080px, calc(100% - 36px)); margin: 0 auto; }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 18px; padding: 22px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; font-weight: 800; letter-spacing: .02em; }
+    .brand-mark {
+      display: grid; place-items: center; width: 38px; height: 38px;
+      border-radius: 12px; background: var(--lime); color: #07101d;
+      font-size: 1rem; font-weight: 950;
+    }
+    .brand small { display: block; color: var(--muted); font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+    .top-link { color: var(--muted); font-size: .9rem; text-decoration: none; }
+    .top-link:hover { color: var(--lime); }
+    .hero { padding: clamp(54px, 9vw, 100px) 0 56px; text-align: center; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px;
+      border: 1px solid rgba(197, 243, 106, .25); border-radius: 999px;
+      color: var(--lime); background: rgba(197, 243, 106, .07);
+      font-size: .78rem; font-weight: 750; letter-spacing: .1em; text-transform: uppercase;
+    }
+    h1 { margin: 20px 0 14px; font-size: clamp(2.5rem, 7vw, 5rem); line-height: 1.04; letter-spacing: -.055em; }
+    h1 span { color: var(--lime); }
+    .intro { max-width: 680px; margin: 0 auto; color: var(--muted); font-size: clamp(1rem, 2vw, 1.15rem); }
+    .play-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin: 0 auto; }
+    .play-card {
+      position: relative; overflow: hidden; padding: 28px; border: 1px solid var(--line);
+      border-radius: var(--radius); background: linear-gradient(145deg, rgba(16, 36, 58, .98), rgba(13, 28, 44, .96));
+      box-shadow: 0 18px 55px rgba(0, 0, 0, .18);
+    }
+    .play-card.primary { border-color: rgba(197, 243, 106, .38); }
+    .play-card::after {
+      content: ""; position: absolute; width: 170px; height: 170px; right: -80px; top: -90px;
+      border-radius: 50%; background: rgba(125, 228, 225, .08); pointer-events: none;
+    }
+    .label { color: var(--cyan); font-size: .76rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .play-card h2 { margin: 8px 0 8px; font-size: 1.55rem; line-height: 1.2; }
+    .play-card p { min-height: 54px; margin: 0 0 22px; color: var(--muted); }
+    .button {
+      display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+      min-height: 46px; padding: 11px 18px; border-radius: 12px;
+      background: var(--lime); color: #07101d; font-weight: 850; text-decoration: none;
+      transition: transform .18s ease, filter .18s ease;
+    }
+    .button:hover { transform: translateY(-2px); filter: brightness(1.06); }
+    .button.secondary { background: transparent; color: var(--text); border: 1px solid rgba(125, 228, 225, .42); }
+    .notice { margin: 18px 0 0; padding: 13px 16px; border-left: 3px solid var(--cyan); border-radius: 0 10px 10px 0; background: rgba(125, 228, 225, .06); color: var(--muted); font-size: .9rem; }
+    section { padding: 58px 0 12px; }
+    .section-head { margin-bottom: 24px; }
+    .section-head .label { color: var(--lime); }
+    h2.section-title { margin: 7px 0 6px; font-size: clamp(1.7rem, 4vw, 2.35rem); letter-spacing: -.035em; }
+    .section-desc { margin: 0; max-width: 650px; color: var(--muted); }
+    .services { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .service {
+      padding: 22px; border: 1px solid var(--line); border-radius: 16px;
+      background: rgba(13, 28, 44, .82);
+    }
+    .service-top { display: flex; align-items: center; gap: 13px; margin-bottom: 10px; }
+    .icon {
+      display: grid; place-items: center; flex: 0 0 42px; height: 42px;
+      border-radius: 12px; background: rgba(125, 228, 225, .1); color: var(--cyan);
+      font-size: 1.2rem; font-weight: 900;
+    }
+    .service h3 { margin: 0; font-size: 1.08rem; }
+    .service p { margin: 0; color: var(--muted); font-size: .94rem; }
+    .service a { display: inline-block; margin-top: 12px; color: var(--cyan); font-size: .86rem; font-weight: 700; text-decoration: none; overflow-wrap: anywhere; }
+    .service a:hover { color: var(--lime); text-decoration: underline; }
+    .about {
+      margin: 42px 0 64px; padding: 22px 24px; border: 1px solid var(--line);
+      border-radius: 16px; background: rgba(255, 255, 255, .025);
+    }
+    .about h2 { margin: 0 0 8px; font-size: 1.15rem; }
+    .about p { margin: 0; color: var(--muted); font-size: .94rem; }
+    footer { padding: 22px 0 34px; border-top: 1px solid var(--line); color: var(--muted); font-size: .84rem; }
+    footer .foot { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    @media (max-width: 700px) {
+      .play-grid, .services { grid-template-columns: 1fr; }
+      .play-card p { min-height: 0; }
+      .top-link { font-size: .8rem; }
+      .hero { padding-top: 58px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="wrap topbar">
+    <a class="brand" href="./" aria-label="Mcraft — Central Macatuba">
+      <span class="brand-mark" aria-hidden="true">CM</span>
+      <span>Mcraft<small>Central Macatuba</small></span>
+    </a>
+    <a class="top-link" href="#servicos">Conheça os serviços ↓</a>
+  </header>
+
+  <main class="wrap">
+    <section class="hero" aria-labelledby="page-title">
+      <span class="eyebrow">Minecraft direto no navegador</span>
+      <h1 id="page-title">Seu mundo.<br><span>Seu jeito de jogar.</span></h1>
+      <p class="intro">
+        Abra o Mcraft sem instalar um launcher. Escolha a versão do cliente e comece a jogar
+        diretamente pelo navegador.
+      </p>
+    </section>
+
+    <div class="play-grid" aria-label="Escolha do cliente Mcraft">
+      <article class="play-card primary">
+        <div class="label">Experiência principal</div>
+        <h2>Mcraft atual</h2>
+        <p>Cliente atualizado, com multiplayer baseado em Trystero e conexão entre jogadores por WebRTC.</p>
+        <a class="button" href="game/">Jogar agora <span aria-hidden="true">→</span></a>
+      </article>
+
+      <article class="play-card">
+        <div class="label">Compatibilidade</div>
+        <h2>Mcraft clássico (PeerJS)</h2>
+        <p>Versão histórica mantida separadamente para compatibilidade com a arquitetura multiplayer anterior.</p>
+        <a class="button secondary" href="game-peerjs/">Abrir versão clássica <span aria-hidden="true">→</span></a>
+      </article>
+    </div>
+
+    <p class="notice">
+      <strong>Dica:</strong> recomendamos começar pelo Mcraft atual. A versão PeerJS é legada
+      e pode ter diferenças de compatibilidade em relação ao cliente principal.
+    </p>
+
+    <section id="servicos" aria-labelledby="services-title">
+      <div class="section-head">
+        <div class="label">Por trás do jogo</div>
+        <h2 class="section-title" id="services-title">Serviços da Central Macatuba</h2>
+        <p class="section-desc">
+          Quatro componentes hospedados pela Central Macatuba ajudam a oferecer mapas,
+          multiplayer e recursos visuais ao Mcraft.
+        </p>
+      </div>
+
+      <div class="services">
+        <article class="service">
+          <div class="service-top">
+            <span class="icon" aria-hidden="true">▦</span>
+            <h3>Mcraft Maps</h3>
+          </div>
+          <p>Catálogo de mundos e mapas para descobrir novas experiências e abrir conteúdos diretamente no cliente.</p>
+          <a href="https://maps.mcraft.centralmacatuba.qzz.io/" rel="noopener">Explorar mapas ↗</a>
+        </article>
+
+        <article class="service">
+          <div class="service-top">
+            <span class="icon" aria-hidden="true">⌘</span>
+            <h3>Relay multiplayer Trystero</h3>
+          </div>
+          <p>Ajuda os jogadores a se encontrarem e iniciarem a conexão multiplayer. Depois da negociação, o jogo procura trocar dados diretamente entre os participantes.</p>
+          <a href="wss://p2p.mcraft.centralmacatuba.qzz.io">p2p.mcraft.centralmacatuba.qzz.io</a>
+        </article>
+
+        <article class="service">
+          <div class="service-top">
+            <span class="icon" aria-hidden="true">↔</span>
+            <h3>Sinalização PeerJS</h3>
+          </div>
+          <p>Serviço de compatibilidade para clientes antigos que ainda utilizam o sistema multiplayer PeerJS. Não substitui o relay Trystero.</p>
+          <a href="https://p2p-peerjs.mcraft.centralmacatuba.qzz.io/health" rel="noopener">p2p-peerjs.mcraft.centralmacatuba.qzz.io</a>
+        </article>
+
+        <article class="service">
+          <div class="service-top">
+            <span class="icon" aria-hidden="true">◇</span>
+            <h3>Proxy de texturas</h3>
+          </div>
+          <p>Intermedia de forma restrita o carregamento de texturas do Minecraft, ajudando o cliente a exibir elementos visuais dos jogadores.</p>
+          <a href="https://texture.proxy.mcraft.centralmacatuba.qzz.io/" rel="noopener">texture.proxy.mcraft.centralmacatuba.qzz.io</a>
+        </article>
+      </div>
+    </section>
+
+    <aside class="about">
+      <h2>Sobre o multiplayer</h2>
+      <p>
+        O relay de sinalização não é um servidor de partidas e não hospeda os mundos dos jogadores.
+        Ele auxilia o início da conexão; quando possível, os participantes trocam os dados do jogo
+        diretamente por WebRTC. A qualidade da conexão também depende da rede e do navegador de cada jogador.
+      </p>
+    </aside>
+  </main>
+
+  <footer>
+    <div class="wrap foot">
+      <span>Central Macatuba · Projeto independente</span>
+      <span>Mcraft — Minecraft no navegador</span>
+    </div>
+  </footer>
+</body>
+</html>
