@@ -39,6 +39,9 @@ Os projetos usam a branch `main`. Nos projetos do monorepo, a pasta indicada na 
 - **Cloudflare Pages:** cópia de redundância do mesmo código.
 - **Netlify:** projetos conectados ao GitHub, com deploy automático pela branch `main`.
 - **Firebase Hosting:** cópia publicada no projeto Firebase `centralmacatuba`.
+- **GitHub Actions:** o workflow `.github/workflows/firebase-hosting.yml` executa `firebase deploy --only hosting` em cada push na `main` e também pode ser executado manualmente. Ele publica todos os 15 targets deste monorepo definidos em `firebase.json`.
+
+Para habilitar o workflow, configure no repositório o segredo `FIREBASE_SERVICE_ACCOUNT_CENTRALMACATUBA` com o JSON de uma conta de serviço autorizada no projeto Firebase `centralmacatuba`. O deploy manual pelo Firebase CLI continua disponível.
 
 Para os 15 projetos dentro deste repositório, cada plataforma deve apontar para a pasta correspondente indicada na tabela. Os três projetos independentes (`jsminecraft`, `games-site`, `tunnelrushtopvaz` e `tgcofficial`) usam a raiz de seus próprios repositórios.
 

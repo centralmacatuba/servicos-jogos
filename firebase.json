@@ -1,0 +1,19 @@
+{
+  "hosting": [
+    {"target":"amplerlauncher","public":"minecraft/amplerlauncher","ignore":["firebase.json","**/.*","**/node_modules/**"]},
+    {"target":"astra-game-e0382","public":"minecraft/astra","ignore":["firebase.json","**/.*","**/node_modules/**"]},
+    {"target":"classicube","public":"minecraft/classicube","ignore":["firebase.json","**/.*","**/node_modules/**"]},
+    {"target":"eaglercraft-site","public":"minecraft/eaglercraft","ignore":["firebase.json","**/.*","**/node_modules/**"]},
+    {"target":"eaglercraft-dev","public":"minecraft/eaglercraft-dev","ignore":["firebase.json","**/.*","**/node_modules/**"]},
+    {"target":"eaglercraft-ir","public":"minecraft/eaglercraft-ir","ignore":["firebase.json","**/.*","**/node_modules/**"]},
+    {"target":"koneclient","public":"minecraft/koneclient","ignore":["firebase.json","**/.*","**/node_modules/**"]},
+    {"target":"mcraft","public":"minecraft/mcraft","ignore":["firebase.json","**/.*","**/node_modules/**"]},
+    {"target":"pixel-game-c088a","public":"minecraft/pixel","ignore":["firebase.json","**/.*","**/node_modules/**"]},
+    {"target":"scratch-game-b4d70","public":"minecraft/scratch","ignore":["firebase.json","**/.*","**/node_modules/**"]},
+    {"target":"webwasm","public":"minecraft/webwasm","ignore":["firebase.json","**/.*","**/node_modules/**"]},
+    {"target":"tabuleiros","public":"tabuleiros","ignore":["firebase.json","**/.*","**/node_modules/**"]},
+    {"target":"verdade-desafio-game","public":"verdade-ou-desafio","ignore":["firebase.json","**/.*","**/node_modules/**"]},
+    {"target":"brincadeiras","public":"brincadeiras","ignore":["firebase.json","**/.*","**/node_modules/**"]},
+    {"target":"uno-game","public":"uno","ignore":["firebase.json","**/.*","**/node_modules/**"]}
+  ]
+}

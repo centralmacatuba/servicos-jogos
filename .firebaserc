@@ -1,0 +1,26 @@
+{
+  "projects": {
+    "default": "centralmacatuba"
+  },
+  "targets": {
+    "centralmacatuba": {
+      "hosting": {
+        "amplerlauncher": ["amplerlauncher"],
+        "astra-game-e0382": ["astra-game-e0382"],
+        "classicube": ["classicube"],
+        "eaglercraft-site": ["eaglercraft-site"],
+        "eaglercraft-dev": ["eaglercraft-dev"],
+        "eaglercraft-ir": ["eaglercraft-ir"],
+        "koneclient": ["koneclient"],
+        "mcraft": ["mcraft"],
+        "pixel-game-c088a": ["pixel-game-c088a"],
+        "scratch-game-b4d70": ["scratch-game-b4d70"],
+        "webwasm": ["webwasm"],
+        "tabuleiros": ["tabuleiros"],
+        "verdade-desafio-game": ["verdade-desafio-game"],
+        "brincadeiras": ["brincadeiras"],
+        "uno-game": ["uno-game"]
+      }
+    }
+  }
+}
