@@ -3,7 +3,7 @@
 Este repositório centraliza os projetos de serviços e jogos da Central Macatuba. Cada projeto possui deploy independente e está disponível em **cinco plataformas** para redundância e disponibilidade:
 
 1. **Vercel** — hospedagem principal, com os domínios personalizados `qzz.io` e `dpdns.org`.
-2. **Cloudflare Pages** — cópia de redundância.
+2. **CloudFlare Pages** — cópia de redundância.
 3. **Netlify** — cópia conectada ao GitHub.
 4. **Firebase Hosting** — cópia adicional publicada no projeto Firebase `centralmacatuba`.
 5. **GitHub Pages** — hospedagem estática complementar, com acesso individual aos projetos pelos links desta tabela.
@@ -12,7 +12,7 @@ Os projetos usam a branch `principal`. Nos projetos do monorepo, a pasta indicad
 
 ## Projetos e links de acesso
 
-| Projeto | Diretório | Vercel — principal | CF Pages | Netlify | Firebase Hosting | GitHub Pages |
+| Projeto | Diretório | Vercel — principal | CloudFlare Pages | Netlify | Firebase Hosting | GitHub Pages |
 |---|---|---|---|---|---|---|
 | Minecraft (Scratch) | `minecraft/scratch/` | [Vercel](https://centralmacatuba-servicos-jogos-minecraft-scratch.vercel.app) - [qzz.io](https://scratch.minecraft.jogos.servicos.centralmacatuba.qzz.io) · [dpdns.org](https://scratch.minecraft.jogos.servicos.centralmacatuba.dpdns.org) | [CF Pages](https://centralmacatuba-servicos-jogos-minecraft-scratch.pages.dev) | [Netlify](https://centralmacatuba-servicos-jogos-minecraft-scratch.netlify.app) | [Firebase](https://scratch-game-b4d70.web.app) | [GH Pages](https://centralmacatuba.github.io/servicos-jogos/minecraft/scratch/) |
 | JSMinecraft | raiz de `jsminecraft/` | [qzz.io](https://jsminecraft.minecraft.jogos.servicos.centralmacatuba.qzz.io) · [dpdns.org](https://jsminecraft.minecraft.jogos.servicos.centralmacatuba.dpdns.org) | [CF Pages](https://centralmacatuba-servicos-jogos-minecraft-jsminecraft.pages.dev) | [Netlify](https://centralmacatuba-servicos-jogos-minecraft-jsminecraft.netlify.app) | [Firebase](https://jsminecraft.web.app) | [GH Pages](https://centralmacatuba.github.io/jsminecraft/) |
@@ -37,7 +37,7 @@ Os projetos usam a branch `principal`. Nos projetos do monorepo, a pasta indicad
 ## Deploys e sincronização
 
 - **Vercel:** plataforma principal e deploy automático pela branch `principal`.
-- **Cloudflare Pages:** cópia de redundância do mesmo código.
+- **CloudFlare Pages:** cópia de redundância do mesmo código.
 - **Netlify:** projetos conectados ao GitHub, com deploy automático pela branch `main`.
 - **Firebase Hosting:** cópia publicada no projeto Firebase `centralmacatuba`.
 - **GitHub Pages:** hospedagem estática complementar, com os projetos publicados em caminhos individuais; os links de acesso correspondentes estão na tabela acima.
