@@ -7,7 +7,7 @@ Este repositório centraliza os projetos de serviços e jogos da Central Macatub
 3. **Netlify** — cópia conectada ao GitHub.
 4. **Firebase Hosting** — cópia adicional publicada no projeto Firebase `centralmacatuba`.
 
-Os projetos usam a branch `main`. Nos projetos do monorepo, a pasta indicada na coluna **Diretório** é o **Root directory/Base directory** de cada plataforma.
+Os projetos usam a branch `principal`. Nos projetos do monorepo, a pasta indicada na coluna **Diretório** é o **Root directory/Base directory** de cada plataforma.
 
 ## Projetos e links de acesso
 
@@ -35,11 +35,11 @@ Os projetos usam a branch `main`. Nos projetos do monorepo, a pasta indicada na 
 
 ## Deploys e sincronização
 
-- **Vercel:** plataforma principal e deploy automático pela branch `main`.
+- **Vercel:** plataforma principal e deploy automático pela branch `principal`.
 - **Cloudflare Pages:** cópia de redundância do mesmo código.
 - **Netlify:** projetos conectados ao GitHub, com deploy automático pela branch `main`.
 - **Firebase Hosting:** cópia publicada no projeto Firebase `centralmacatuba`.
-- **GitHub Actions:** o workflow `.github/workflows/firebase-hosting.yml` executa `firebase deploy --only hosting` em cada push na `main` e também pode ser executado manualmente. Ele publica todos os 15 targets deste monorepo definidos em `firebase.json`.
+- **GitHub Actions:** o workflow `.github/workflows/firebase-hosting.yml` executa `firebase deploy --only hosting` em cada push na `principal` e também pode ser executado manualmente. Ele publica todos os 15 targets deste monorepo definidos em `firebase.json`.
 
 Para habilitar o workflow, configure no repositório o segredo `FIREBASE_SERVICE_ACCOUNT_CENTRALMACATUBA` com o JSON de uma conta de serviço autorizada no projeto Firebase `centralmacatuba`. O deploy manual pelo Firebase CLI continua disponível.
 
