@@ -33,7 +33,7 @@ jobs:
           test -n "$tag"
 
           current="$(curl --fail --silent --show-error \
-            "https://raw.githubusercontent.com/centralmacatuba/servicos-jogos/main/minecraft/mcraft/versao.txt?cachebust=${GITHUB_RUN_ID}" \
+            "https://raw.githubusercontent.com/centralmacatuba/servicos-jogos/principal/minecraft/mcraft/versao.txt?cachebust=${GITHUB_RUN_ID}" \
             | tr -d '\r\n[:space:]')"
 
           echo "Upstream latest release: $tag"
@@ -58,7 +58,7 @@ jobs:
       - name: Checkout Central Macatuba repository
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: principal
           fetch-depth: 0
 
       - name: Set up Node.js
