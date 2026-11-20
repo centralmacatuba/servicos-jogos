@@ -79,7 +79,7 @@ jobs:
       - name: Checkout Central Macatuba repository
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: principal
           fetch-depth: 0
 
       - name: Set up Emscripten
@@ -150,6 +150,7 @@ jobs:
           out="minecraft/classicube"
           cp upstream/ClassiCube.js "$out/ClassiCube.js"
           cp upstream/ClassiCube.wasm "$out/ClassiCube.wasm"
+          cp "$out/default.zip" "$out/ClassiCube.zip"
 
           cat > "$out/index.html" <<'HTML'
           <!doctype html>
