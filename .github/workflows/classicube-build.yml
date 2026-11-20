@@ -55,7 +55,7 @@ jobs:
           test -n "$tag"
 
           current="$(curl --fail --silent --show-error \
-            "https://raw.githubusercontent.com/centralmacatuba/servicos-jogos/main/minecraft/classicube/versao.txt?cachebust=${GITHUB_RUN_ID}" \
+            "https://raw.githubusercontent.com/centralmacatuba/servicos-jogos/principal/minecraft/classicube/versao.txt?cachebust=${GITHUB_RUN_ID}" \
             | tr -d '\r\n[:space:]')"
 
           echo "Official release: $tag"
@@ -239,4 +239,4 @@ jobs:
           fi
 
           git commit -m "build(classicube): compile upstream release $UPSTREAM_TAG"
-          git push origin HEAD:main
+          git push origin HEAD:principal
