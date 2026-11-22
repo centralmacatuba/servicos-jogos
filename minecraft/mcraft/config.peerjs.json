@@ -10,7 +10,7 @@
     "https://proxy.mcraft.centralmacatuba.qzz.io"
   ],
   "peerJsServer": "wss://p2p.mcraft.fun",
-  "peerJsServerFallback": "wss://p2p-peerjs.mcraft.centralmacatuba.qzz.io",
+  "peerJsServerFallback": "wss://p2p-peerjs.mcraft.centralmacatuba.qzz.io/p2p",
   "promoteServers": [
     {
       "ip": "wss://mcraft.centralmacatuba.qzz.io",
