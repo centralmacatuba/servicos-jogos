@@ -2,8 +2,23 @@ name: Build Mcraft Web Client
 
 on:
   workflow_dispatch:
+    inputs:
+      validate_only:
+        description: "Apenas validar config.json, sem build, publicação ou commit"
+        required: false
+        type: boolean
+        default: false
+      upstream_ref:
+        description: "Release/tag, SHA completo de commit ou nome de branch do upstream (vazio = última release estável)"
+        required: false
+        type: string
+        default: ""
+      force_build:
+        description: "Forçar build e publicação, mesmo que a versão já esteja publicada"
+        required: false
+        type: boolean
+        default: false
   schedule:
-    # Poll the upstream releases once per day. The build job runs only for a new tag.
     - cron: "23 5 * * *"
 
 permissions:
@@ -14,45 +29,13 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  check-release:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      changed: ${{ steps.compare.outputs.changed }}
-      tag: ${{ steps.compare.outputs.tag }}
-    steps:
-      - name: Check latest upstream release against versao.txt
-        id: compare
-        run: |
-          set -euo pipefail
-          release_json="$(curl --fail --silent --show-error \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            https://api.github.com/repos/zardoy/minecraft-web-client/releases/latest)"
-          tag="$(printf '%s' "$release_json" | jq -er 'select(.draft == false and .prerelease == false) | .tag_name')"
-          test -n "$tag"
-
-          current="$(curl --fail --silent --show-error \
-            "https://raw.githubusercontent.com/centralmacatuba/servicos-jogos/principal/minecraft/mcraft/versao.txt?cachebust=${GITHUB_RUN_ID}" \
-            | tr -d '\r\n[:space:]')"
-
-          echo "Upstream latest release: $tag"
-          echo "Currently published version: ${current:-<not set>}"
-          echo "tag=$tag" >> "$GITHUB_OUTPUT"
-
-          if [ "$tag" = "$current" ]; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "No new release; skipping the build."
-          else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            echo "A new release was detected; the build will run."
-          fi
-
   build-and-publish:
-    needs: check-release
-    if: needs.check-release.outputs.changed == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
+    env:
+      VALIDATE_ONLY: \${{ inputs.validate_only || false }}
+      FORCE_BUILD: \${{ inputs.force_build || false }}
+      REQUESTED_UPSTREAM_REF: \${{ inputs.upstream_ref || '' }}
 
     steps:
       - name: Checkout Central Macatuba repository
@@ -61,39 +44,128 @@ jobs:
           ref: principal
           fetch-depth: 0
 
+      - name: Validate manual execution options
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          set -euo pipefail
+          if [ "$VALIDATE_ONLY" = "true" ] && [ "$FORCE_BUILD" = "true" ]; then
+            echo "::error::validate_only and force_build cannot be enabled together."
+            exit 1
+          fi
+
+      - name: Resolve exact upstream release, branch or commit
+        id: upstream
+        run: |
+          set -euo pipefail
+          repository="zardoy/minecraft-web-client"
+          requested="$REQUESTED_UPSTREAM_REF"
+          ref_kind=""
+
+          if [ -z "$requested" ]; then
+            release_json="$(curl --fail --silent --show-error \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/repos/$repository/releases/latest")"
+            upstream_ref="$(printf '%s' "$release_json" | jq -er '
+              select(.draft == false and .prerelease == false) | .tag_name
+            ')"
+            ref_kind="release"
+          elif [[ "$requested" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            upstream_ref="$requested"
+            ref_kind="commit"
+          else
+            if git ls-remote --exit-code "https://github.com/$repository.git" "refs/heads/$requested" >/tmp/cm-branch-ref.txt 2>/dev/null; then
+              branch_found=true
+            else
+              branch_found=false
+            fi
+            if git ls-remote --exit-code "https://github.com/$repository.git" "refs/tags/$requested" "refs/tags/$requested^{}" >/tmp/cm-tag-ref.txt 2>/dev/null; then
+              tag_found=true
+            else
+              tag_found=false
+            fi
+
+            if [ "$branch_found" = true ] && [ "$tag_found" = true ]; then
+              echo "::error::The ref '$requested' exists as both a branch and a tag. Use an unambiguous ref."
+              exit 1
+            elif [ "$branch_found" = true ]; then
+              upstream_ref="$requested"
+              ref_kind="branch"
+            elif [ "$tag_found" = true ]; then
+              upstream_ref="$requested"
+              ref_kind="tag"
+            else
+              echo "::error::Upstream ref '$requested' was not found as a branch or tag."
+              exit 1
+            fi
+          fi
+
+          git init upstream
+          git -C upstream remote add origin "https://github.com/$repository.git"
+          git -C upstream fetch --depth=1 origin "$upstream_ref"
+          git -C upstream checkout --detach FETCH_HEAD
+          upstream_sha="$(git -C upstream rev-parse HEAD)"
+          if [[ "$requested" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            requested_lower="$(printf '%s' "$requested" | tr '[:upper:]' '[:lower:]')"
+            if [ "$upstream_sha" != "$requested_lower" ]; then
+              echo "::error::Fetched commit does not match the requested SHA."
+              exit 1
+            fi
+          fi
+
+          echo "Resolved upstream $ref_kind: $upstream_ref"
+          echo "Resolved upstream commit: $upstream_sha"
+          echo "UPSTREAM_REF=$upstream_ref" >> "$GITHUB_ENV"
+          echo "UPSTREAM_SHA=$upstream_sha" >> "$GITHUB_ENV"
+          echo "UPSTREAM_REF_KIND=$ref_kind" >> "$GITHUB_ENV"
+
+      - name: Compare upstream release with published version
+        id: compare
+        if: env.VALIDATE_ONLY != 'true' && env.FORCE_BUILD != 'true' && env.UPSTREAM_REF_KIND == 'release'
+        run: |
+          set -euo pipefail
+          current="$(cat minecraft/mcraft/versao.txt 2>/dev/null | tr -d '\r\n[:space:]' || true)"
+          echo "Upstream release: $UPSTREAM_REF"
+          echo "Currently published version: $current"
+          if [ "$UPSTREAM_REF" = "$current" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No new release; skipping the build."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "A new release was detected."
+          fi
+
       - name: Set up Node.js
+        if: env.VALIDATE_ONLY == 'true' || env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release'
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Install pnpm
+      - name: Install pinned pnpm
+        if: env.VALIDATE_ONLY == 'true' || env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release'
         run: |
           corepack enable
           corepack prepare pnpm@10.32.1 --activate
-
-      - name: Clone the exact upstream release
-        env:
-          UPSTREAM_REF: ${{ needs.check-release.outputs.tag }}
-        run: |
-          git clone --depth 1 --branch "$UPSTREAM_REF" https://github.com/zardoy/minecraft-web-client.git upstream
-          echo "UPSTREAM_SHA=$(git -C upstream rev-parse HEAD)" >> "$GITHUB_ENV"
+          pnpm --version
 
       - name: Install upstream dependencies
+        if: env.VALIDATE_ONLY == 'true' || env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release'
         working-directory: upstream
         run: pnpm install --frozen-lockfile
 
       - name: Apply Central Macatuba configuration
+        if: env.VALIDATE_ONLY == 'true' || env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release'
         run: |
+          set -euo pipefail
           test -s minecraft/mcraft/config.json
           node -e "JSON.parse(require('fs').readFileSync('minecraft/mcraft/config.json', 'utf8'))"
           cp minecraft/mcraft/config.json upstream/config.json
 
-      - name: Validate config.json against the release AppConfig type
+      - name: Validate config.json against the resolved AppConfig type
+        if: env.VALIDATE_ONLY == 'true' || env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release'
         working-directory: upstream
         run: |
-          # "version" and "defaultHost" are Central Macatuba metadata retained in
-          # config.json for its own tooling. The remaining object must match the
-          # exact AppConfig contract shipped in this upstream release.
+          set -euo pipefail
           node --input-type=module <<'EOF'
           import fs from 'node:fs'
 
@@ -113,10 +185,6 @@ jobs:
           import configJson from '../config.json'
           import type { AppConfig } from './appConfig'
 
-          // Recursively checks assignability and rejects keys that do not exist
-          // in the upstream type, including keys nested inside typed objects.
-          // Record<string, any> fields remain intentionally extensible as defined
-          // by AppConfig itself.
           type DeepExact<Actual, Expected> =
             Actual extends readonly (infer ActualItem)[]
               ? Expected extends readonly (infer ExpectedItem)[]
@@ -140,20 +208,29 @@ jobs:
           trap 'rm -f src/__cm_config_check.ts' EXIT
           pnpm prepare-project
           pnpm exec tsc --noEmit --resolveJsonModule
+          echo "config.json passed JSON, metadata and exact AppConfig type validation."
+
+      - name: Stop after config validation
+        if: env.VALIDATE_ONLY == 'true'
+        run: echo "Validation-only mode completed. Build, publication and commit were skipped."
 
       - name: Build production client
+        if: env.VALIDATE_ONLY != 'true' && (env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release')
         working-directory: upstream
         env:
           CONFIG_JSON_SOURCE: REMOTE
           DISABLE_SERVICE_WORKER: "false"
         run: |
+          set -euo pipefail
           pnpm build
           test -s dist/index.html
           test -s dist/config.json
           node -e "JSON.parse(require('fs').readFileSync('dist/config.json', 'utf8'))"
 
       - name: Publish generated web client into minecraft/mcraft/game
+        if: env.VALIDATE_ONLY != 'true' && (env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release')
         run: |
+          set -euo pipefail
           mkdir -p minecraft/mcraft/game
           rsync -a --delete upstream/dist/ minecraft/mcraft/game/
           test -s minecraft/mcraft/game/index.html
@@ -161,19 +238,19 @@ jobs:
           node -e "JSON.parse(require('fs').readFileSync('minecraft/mcraft/game/config.json', 'utf8'))"
 
       - name: Update version marker and commit all generated files together
-        env:
-          UPSTREAM_TAG: ${{ needs.check-release.outputs.tag }}
+        if: env.VALIDATE_ONLY != 'true' && (env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release')
         run: |
           set -euo pipefail
-          printf '%s\n' "$UPSTREAM_TAG" > minecraft/mcraft/versao.txt
+          printf '%s\n' "$UPSTREAM_REF" > minecraft/mcraft/versao.txt
+          printf '%s\n' "$UPSTREAM_SHA" > minecraft/mcraft/game/source-commit.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add minecraft/mcraft/game/ minecraft/mcraft/versao.txt
 
           if git diff --cached --quiet; then
-            echo "Generated files and version marker are unchanged; no commit needed."
+            echo "Generated files and version markers are unchanged; no commit needed."
             exit 0
           fi
 
-          git commit -m "build(mcraft): publish upstream release $UPSTREAM_TAG"
+          git commit -m "build(mcraft): publish upstream ref $UPSTREAM_REF"
           git push origin HEAD:principal
