@@ -60,23 +60,25 @@ jobs:
           tag="${tag#v}"
           test -n "$tag"
 
-          current="$(curl --fail --silent --show-error \
-            "https://raw.githubusercontent.com/centralmacatuba/servicos-jogos/principal/minecraft/classicube/versao.txt?cachebust=${GITHUB_RUN_ID}" \
-            | tr -d '\r\n[:space:]')"
-
           echo "Official release: $tag"
-          echo "Published version: ${current:-<not set>}"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
           if [ "$FORCE_BUILD" = "true" ]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
-            echo "Force build enabled; version comparison is bypassed."
-          elif [ "$tag" = "$current" ]; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "Version already built; skipping compilation."
+            echo "Force build enabled; published-version lookup and comparison are skipped."
           else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            echo "A different version was requested; compilation is required."
+            current="$(curl --fail --silent --show-error \
+              "https://raw.githubusercontent.com/centralmacatuba/servicos-jogos/principal/minecraft/classicube/versao.txt?cachebust=${GITHUB_RUN_ID}" \
+              | tr -d '\r\n[:space:]')"
+            echo "Published version: ${current:-<not set>}"
+
+            if [ "$tag" = "$current" ]; then
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+              echo "Version already built; skipping compilation."
+            else
+              echo "changed=true" >> "$GITHUB_OUTPUT"
+              echo "A different version was requested; compilation is required."
+            fi
           fi
 
   build-and-publish:
