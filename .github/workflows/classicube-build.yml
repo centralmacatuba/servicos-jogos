@@ -8,6 +8,11 @@ on:
         required: false
         type: string
         default: ""
+      force_build:
+        description: "Forçar compilação e publicação mesmo que a versão já esteja publicada"
+        required: false
+        type: boolean
+        default: false
   schedule:
     # Verifica diariamente se saiu uma nova release estável; só compila quando a versão mudar.
     - cron: "41 5 * * *"
@@ -31,6 +36,7 @@ jobs:
         id: compare
         env:
           REQUESTED_VERSION: ${{ inputs.version }}
+          FORCE_BUILD: ${{ inputs.force_build || false }}
         run: |
           set -euo pipefail
 
@@ -62,7 +68,10 @@ jobs:
           echo "Published version: ${current:-<not set>}"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
-          if [ "$tag" = "$current" ]; then
+          if [ "$FORCE_BUILD" = "true" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Force build enabled; version comparison is bypassed."
+          elif [ "$tag" = "$current" ]; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "Version already built; skipping compilation."
           else
@@ -221,6 +230,7 @@ jobs:
           test -s "$out/ClassiCube.js"
           test -s "$out/ClassiCube.wasm"
           test -s "$out/default.zip"
+          mkdir -p minecraft/classicube/game
           printf '%s\n' "$UPSTREAM_TAG" > minecraft/classicube/versao.txt
           printf '%s\n' "$UPSTREAM_SHA" > minecraft/classicube/game/source-commit.txt
 
