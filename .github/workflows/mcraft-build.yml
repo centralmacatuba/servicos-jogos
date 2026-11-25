@@ -33,9 +33,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      VALIDATE_ONLY: \${{ inputs.validate_only || false }}
-      FORCE_BUILD: \${{ inputs.force_build || false }}
-      REQUESTED_UPSTREAM_REF: \${{ inputs.upstream_ref || '' }}
+      VALIDATE_ONLY: ${{ inputs.validate_only || false }}
+      FORCE_BUILD: ${{ inputs.force_build || false }}
+      REQUESTED_UPSTREAM_REF: ${{ inputs.upstream_ref || '' }}
 
     steps:
       - name: Checkout Central Macatuba repository
