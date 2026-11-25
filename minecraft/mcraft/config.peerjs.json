@@ -2,13 +2,6 @@
   "version": 1,
   "defaultHost": "<from-proxy>",
   "defaultProxy": "https://proxy.mcraft.fun",
-  "defaultProxies": [
-    "https://proxy.mcraft.fun",
-    "https://proxy2.mcraft.fun",
-    "https://proxy3.mcraft.fun",
-    "https://pwc.koyeb.app",
-    "https://proxy.mcraft.centralmacatuba.qzz.io"
-  ],
   "peerJsServer": "wss://p2p.mcraft.fun",
   "peerJsServerFallback": "wss://p2p-peerjs.mcraft.centralmacatuba.qzz.io/p2p",
   "promoteServers": [
@@ -49,16 +42,48 @@
   "defaultLanguage": "pt-br",
   "pauseLinks": [
     [
-      { "type": "github" },
-      { "type": "discord" }
+      {
+        "type": "github"
+      },
+      {
+        "type": "discord"
+      }
     ]
   ],
   "defaultUsername": "mcrafter{0-9999}",
   "mobileButtons": [
-    { "action": "general.selectItem", "actionHold": "", "label": "S" },
-    { "action": "general.debugOverlay", "actionHold": "general.debugOverlayHelpMenu", "label": "F3" },
-    { "action": "general.playersList", "actionHold": "", "icon": "pixelarticons:users", "label": "TAB" },
-    { "action": "general.chat", "actionHold": "", "label": "" },
-    { "action": "ui.pauseMenu", "actionHold": "", "label": "" }
-  ]
+    {
+      "action": "general.selectItem",
+      "actionHold": "",
+      "label": "S"
+    },
+    {
+      "action": "general.debugOverlay",
+      "actionHold": "general.debugOverlayHelpMenu",
+      "label": "F3"
+    },
+    {
+      "action": "general.playersList",
+      "actionHold": "",
+      "icon": "pixelarticons:users",
+      "label": "TAB"
+    },
+    {
+      "action": "general.chat",
+      "actionHold": "",
+      "label": ""
+    },
+    {
+      "action": "ui.pauseMenu",
+      "actionHold": "",
+      "label": ""
+    }
+  ],
+  "mapsProvider": "https://maps.mcraft.centralmacatuba.qzz.io/",
+  "skinTexturesProxy": "https://texture.proxy.mcraft.centralmacatuba.qzz.io",
+  "showModsButton": true,
+  "reportBugButtonWithReconnect": true,
+  "alwaysReconnectButton": true,
+  "watermark": "Central Macatuba - Mcraft (PeerJS)",
+  "watermarkDate": true
 }
