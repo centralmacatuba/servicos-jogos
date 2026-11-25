@@ -3,12 +3,12 @@ name: Build Mcraft Web Client
 on:
   workflow_dispatch:
     inputs:
-      validate_only:
-        description: "Apenas validar config.json, sem build, publicação ou commit"
+      skip_commit:
+        description: "Não criar commit nem fazer push após o build"
         required: false
         type: boolean
         default: false
-      upstream_ref:
+      version:
         description: "Release/tag, SHA completo de commit ou nome de branch do upstream (vazio = última release estável)"
         required: false
         type: string
@@ -33,9 +33,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      VALIDATE_ONLY: ${{ inputs.validate_only || false }}
       FORCE_BUILD: ${{ inputs.force_build || false }}
-      REQUESTED_UPSTREAM_REF: ${{ inputs.upstream_ref || '' }}
+      REQUESTED_VERSION: ${{ inputs.version || '' }}
 
     steps:
       - name: Checkout Central Macatuba repository
@@ -44,21 +43,12 @@ jobs:
           ref: principal
           fetch-depth: 0
 
-      - name: Validate manual execution options
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          set -euo pipefail
-          if [ "$VALIDATE_ONLY" = "true" ] && [ "$FORCE_BUILD" = "true" ]; then
-            echo "::error::validate_only and force_build cannot be enabled together."
-            exit 1
-          fi
-
       - name: Resolve exact upstream release, branch or commit
         id: upstream
         run: |
           set -euo pipefail
           repository="zardoy/minecraft-web-client"
-          requested="$REQUESTED_UPSTREAM_REF"
+          requested="$REQUESTED_VERSION"
           ref_kind=""
 
           if [ -z "$requested" ]; then
@@ -124,7 +114,7 @@ jobs:
 
       - name: Compare upstream release with published version
         id: compare
-        if: env.VALIDATE_ONLY != 'true' && env.FORCE_BUILD != 'true' && env.UPSTREAM_REF_KIND == 'release'
+        if: env.FORCE_BUILD != 'true' && env.UPSTREAM_REF_KIND == 'release'
         run: |
           set -euo pipefail
           current="$(cat minecraft/mcraft/versao.txt 2>/dev/null | tr -d '\r\n[:space:]' || true)"
@@ -139,25 +129,25 @@ jobs:
           fi
 
       - name: Set up Node.js
-        if: env.VALIDATE_ONLY == 'true' || env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release'
+        if: env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release'
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
       - name: Install pinned pnpm
-        if: env.VALIDATE_ONLY == 'true' || env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release'
+        if: env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release'
         run: |
           corepack enable
           corepack prepare pnpm@10.32.1 --activate
           pnpm --version
 
       - name: Install upstream dependencies
-        if: env.VALIDATE_ONLY == 'true' || env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release'
+        if: env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release'
         working-directory: upstream
         run: pnpm install --frozen-lockfile
 
       - name: Apply Central Macatuba configuration
-        if: env.VALIDATE_ONLY == 'true' || env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release'
+        if: env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release'
         run: |
           set -euo pipefail
           test -s minecraft/mcraft/config.json
@@ -165,7 +155,7 @@ jobs:
           cp minecraft/mcraft/config.json upstream/config.json
 
       - name: Validate config.json against the resolved AppConfig type
-        if: env.VALIDATE_ONLY == 'true' || env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release'
+        if: env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release'
         working-directory: upstream
         run: |
           set -euo pipefail
@@ -213,12 +203,8 @@ jobs:
           pnpm exec tsc --noEmit --resolveJsonModule
           echo "config.json passed JSON, metadata and exact AppConfig type validation."
 
-      - name: Stop after config validation
-        if: env.VALIDATE_ONLY == 'true'
-        run: echo "Validation-only mode completed. Build, publication and commit were skipped."
-
       - name: Build production client
-        if: env.VALIDATE_ONLY != 'true' && (env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release')
+        if: (env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release')
         working-directory: upstream
         env:
           CONFIG_JSON_SOURCE: REMOTE
@@ -231,7 +217,7 @@ jobs:
           node -e "JSON.parse(require('fs').readFileSync('dist/config.json', 'utf8'))"
 
       - name: Publish generated web client into minecraft/mcraft/game
-        if: env.VALIDATE_ONLY != 'true' && (env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release')
+        if: (env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release')
         run: |
           set -euo pipefail
           mkdir -p minecraft/mcraft/game
@@ -241,7 +227,7 @@ jobs:
           node -e "JSON.parse(require('fs').readFileSync('minecraft/mcraft/game/config.json', 'utf8'))"
 
       - name: Update version marker and commit all generated files together
-        if: env.VALIDATE_ONLY != 'true' && (env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release')
+        if: inputs.skip_commit != true && (env.FORCE_BUILD == 'true' || steps.compare.outputs.changed == 'true' || env.UPSTREAM_REF_KIND != 'release')
         run: |
           set -euo pipefail
           printf '%s\n' "$UPSTREAM_REF" > minecraft/mcraft/versao.txt
