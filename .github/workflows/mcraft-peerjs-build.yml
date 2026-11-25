@@ -2,6 +2,12 @@ name: Build Mcraft PeerJS Historical Client
 
 on:
   workflow_dispatch:
+    inputs:
+      skip_commit:
+        description: "Validar, construir e publicar sem criar commit nem fazer push"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -143,6 +149,7 @@ jobs:
           printf '%s\n' "$BUILD_ID ($UPSTREAM_SHA)" > minecraft/mcraft/versao-peerjs.txt
 
       - name: Commit the generated historical client on the current branch
+        if: inputs.skip_commit != true
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
