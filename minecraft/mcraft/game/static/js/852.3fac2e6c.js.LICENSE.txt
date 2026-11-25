@@ -17,6 +17,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 */
 
 /*!
+ * @zenfs/core — https://npmjs.com/package/@zenfs/core
+ * Copyright © James Prevett and other ZenFS contributors.
+ * SPDX-License-Identifier: LGPL-3.0-or-later
+ */
+
+/*!
  * Determine if an object is a Buffer
  *
  * @author   Feross Aboukhadijeh <https://feross.org>
@@ -33,20 +39,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
  */
 
 /*!
- * The buffer module from node.js, for the browser.
- *
- * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
- * @license  MIT
- */
-
-/*!
- * The buffer module from node.js, for the browser.
- *
- * @author   Feross Aboukhadijeh <https://feross.org>
- * @license  MIT
- */
-
-/*!
 * tabbable 6.2.0
 * @license MIT, https://github.com/focus-trap/tabbable/blob/master/LICENSE
 */
@@ -55,11 +47,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
 /*! https://mths.be/punycode v1.4.1 by @mathias */
 
-/*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
-
 /*! pako 2.1.0 https://github.com/nodeca/pako @license (MIT AND Zlib) */
-
-/*! safe-buffer. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
 
 /**
      * @license
@@ -136,5 +124,3 @@ https://github.com/nodeca/pako/blob/main/LICENSE
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
-
-/** @license URI.js v4.4.1 (c) 2011 Gary Court. License: http://github.com/garycourt/uri-js */

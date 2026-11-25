@@ -119,5 +119,10 @@
       "actionHold": "",
       "label": ""
     }
-  ]
+  ],
+  "showModsButton": true,
+  "reportBugButtonWithReconnect": true,
+  "alwaysReconnectButton": true,
+  "watermark": "Central Macatuba - Mcraft",
+  "watermarkDate": true
 }
