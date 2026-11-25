@@ -14,16 +14,36 @@
   "p2pRelayServer": "wss://p2p.mcraft.fun",
   "p2pRelayServerFallback": "wss://p2p.mcraft.centralmacatuba.qzz.io",
   "p2pTurnServers": [
-    { "urls": "stun:stun.l.google.com:19302" },
-    { "urls": "stun:stun1.l.google.com:19302" },
-    { "urls": "stun:stun2.l.google.com:19302" },
-    { "urls": "stun:stun3.l.google.com:19302" },
-    { "urls": "stun:stun4.l.google.com:19302" },
-    { "urls": "stun:stun.cloudflare.com:3478" },
-    { "urls": "stun:stun.nextcloud.com:3478" },
-    { "urls": "stun:stun.relay.metered.ca:80" },
-    { "urls": "stun:stun.turnix.io:3478" },
-    { "urls": "stun:to-turn2.xirsys.com" }
+    {
+      "urls": "stun:stun.l.google.com:19302"
+    },
+    {
+      "urls": "stun:stun1.l.google.com:19302"
+    },
+    {
+      "urls": "stun:stun2.l.google.com:19302"
+    },
+    {
+      "urls": "stun:stun3.l.google.com:19302"
+    },
+    {
+      "urls": "stun:stun4.l.google.com:19302"
+    },
+    {
+      "urls": "stun:stun.cloudflare.com:3478"
+    },
+    {
+      "urls": "stun:stun.nextcloud.com:3478"
+    },
+    {
+      "urls": "stun:stun.relay.metered.ca:80"
+    },
+    {
+      "urls": "stun:stun.turnix.io:3478"
+    },
+    {
+      "urls": "stun:to-turn2.xirsys.com"
+    }
   ],
   "promoteServers": [
     {
@@ -63,16 +83,46 @@
   "defaultLanguage": "pt-br",
   "pauseLinks": [
     [
-      { "type": "github" },
-      { "type": "discord" }
+      {
+        "type": "github"
+      },
+      {
+        "type": "discord"
+      }
     ]
   ],
   "defaultUsername": "mcrafter{0-9999}",
   "mobileButtons": [
-    { "action": "general.selectItem", "actionHold": "", "label": "S" },
-    { "action": "general.debugOverlay", "actionHold": "general.debugOverlayHelpMenu", "label": "F3" },
-    { "action": "general.playersList", "actionHold": "", "icon": "pixelarticons:users", "label": "TAB" },
-    { "action": "general.chat", "actionHold": "", "label": "" },
-    { "action": "ui.pauseMenu", "actionHold": "", "label": "" }
-  ]
+    {
+      "action": "general.selectItem",
+      "actionHold": "",
+      "label": "S"
+    },
+    {
+      "action": "general.debugOverlay",
+      "actionHold": "general.debugOverlayHelpMenu",
+      "label": "F3"
+    },
+    {
+      "action": "general.playersList",
+      "actionHold": "",
+      "icon": "pixelarticons:users",
+      "label": "TAB"
+    },
+    {
+      "action": "general.chat",
+      "actionHold": "",
+      "label": ""
+    },
+    {
+      "action": "ui.pauseMenu",
+      "actionHold": "",
+      "label": ""
+    }
+  ],
+  "showModsButton": true,
+  "reportBugButtonWithReconnect": true,
+  "alwaysReconnectButton": true,
+  "watermark": "Central Macatuba - Mcraft",
+  "watermarkDate": true
 }
