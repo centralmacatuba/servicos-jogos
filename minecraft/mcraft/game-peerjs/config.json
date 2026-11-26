@@ -2,19 +2,12 @@
   "version": 1,
   "defaultHost": "<from-proxy>",
   "defaultProxy": "https://proxy.mcraft.fun",
-  "defaultProxies": [
-    "https://proxy.mcraft.fun",
-    "https://proxy2.mcraft.fun",
-    "https://proxy3.mcraft.fun",
-    "https://pwc.koyeb.app",
-    "https://proxy.mcraft.centralmacatuba.qzz.io"
-  ],
   "peerJsServer": "wss://p2p.mcraft.fun",
   "peerJsServerFallback": "wss://p2p-peerjs.mcraft.centralmacatuba.qzz.io/p2p",
   "promoteServers": [
     {
       "ip": "wss://mcraft.centralmacatuba.qzz.io",
-      "name": "Central Macatuba - Mcraft",
+      "name": "Central Macatuba - Minecraft",
       "description": "Jogue Minecraft diretamente no navegador com o Mcraft da Central Macatuba."
     },
     {
@@ -85,5 +78,12 @@
       "actionHold": "",
       "label": ""
     }
-  ]
+  ],
+  "mapsProvider": "https://maps.mcraft.centralmacatuba.qzz.io/",
+  "skinTexturesProxy": "https://texture.proxy.mcraft.centralmacatuba.qzz.io",
+  "showModsButton": true,
+  "reportBugButtonWithReconnect": true,
+  "alwaysReconnectButton": true,
+  "watermark": "Central Macatuba - Mcraft (PeerJS)",
+  "watermarkDate": true
 }
